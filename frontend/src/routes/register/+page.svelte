@@ -9,7 +9,8 @@
            } from "ethers-svelte"
 
     import RegisterForm from "$lib/formTemplates/RegisterForm.svelte";
-    import Centered from '$lib/Centered.svelte';
+    import RowCentered from '$lib/RowCentered.svelte';
+    import ColCentered from "$lib/ColCentered.svelte";
     import BottleImage from '$lib/assets/Wine BottleSmall.png';
 
 
@@ -28,7 +29,7 @@
 
 {#if !$connected}
 
-<Centered>
+<ColCentered>
     <Alert.Root class="w-3/4 p-8" >
             <Alert.Title class="text-5xl text-slate-400">Please connect your wallet!</Alert.Title>
             <Alert.Description class="text-2xl text-slate-400">
@@ -36,11 +37,11 @@
             </Alert.Description>
     </Alert.Root>
     <Button class="text-4xl text-slate-600 m-10 p-10" on:click={connectWallet}>Connect</Button>
-</Centered>
+</ColCentered>
 
 {:else}
 
-<Centered>
+<RowCentered>
     <div class="flex justify-center items-center">
         <img class="w-4/6 h-4/6 object-contain" src={BottleImage} alt="Wine Bottle" />
     </div>
@@ -72,6 +73,6 @@
         <img class="w-4/6 h-4/6 object-contain" src={BottleImage} alt="Wine Bottle" />
     </div>
 
-</Centered>
+</RowCentered>
 
 {/if}

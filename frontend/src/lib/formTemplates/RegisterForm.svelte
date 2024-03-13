@@ -52,6 +52,5 @@
         </Form.Control>
         <Form.FieldErrors />
     </Form.Field>
-
-    <Form.Button class="mt-3">Regisztrálás</Form.Button>
+    <Form.Button class="mt-3 w-full">Regisztrálás</Form.Button>     
 </form>

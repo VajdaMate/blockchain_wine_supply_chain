@@ -1,4 +1,6 @@
 export const factoryContractAdress="0x5FbDB2315678afecb367f032d93F642f64180aa3"
+export type ContractAdress = typeof factoryContractAdress
+export type ABI=typeof factoryAbi
 export const factoryAbi=[
 	{
 		"inputs": [

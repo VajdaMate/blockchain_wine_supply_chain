@@ -2,12 +2,14 @@
     import Button from "$lib/components/ui/button/button.svelte";
     import * as Card from "$lib/components/ui/card";
     import * as Alert from "$lib/components/ui/alert";
+    
     import { onMount } from "svelte"
     import type { PageData } from './$types'
-    import { defaultEvmStores,
-            connected,
-           } from "ethers-svelte"
+    import { defaultEvmStores as evm,connected} from "ethers-svelte"
 
+    
+    
+    import {factoryContractAdress, factoryAbi, bottleAbi} from '$lib/constants'
     import RegisterForm from "$lib/formTemplates/RegisterForm.svelte";
     import RowCentered from '$lib/RowCentered.svelte';
     import ColCentered from "$lib/ColCentered.svelte";
@@ -17,12 +19,15 @@
     export let data: PageData
     
     async function connectWallet() {
-        await defaultEvmStores.setProvider()
+        await evm.setProvider()
         
     }
     onMount(() => {
         connectWallet()
     })
+
+    
+    
 
 </script>
 
@@ -40,7 +45,7 @@
 </ColCentered>
 
 {:else}
-
+{evm.attachContract("Contract1", factoryContractAdress, JSON.stringify(factoryAbi))}
 <RowCentered>
     <div class="flex justify-center items-center">
         <img class="w-4/6 h-4/6 object-contain" src={BottleImage} alt="Wine Bottle" />

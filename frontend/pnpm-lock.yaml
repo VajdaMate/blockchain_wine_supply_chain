@@ -11,6 +11,9 @@ dependencies:
   clsx:
     specifier: ^2.1.0
     version: 2.1.0
+  ethers:
+    specifier: ^6.11.1
+    version: 6.11.1
   ethers-svelte:
     specifier: ^3.2.1
     version: 3.2.1

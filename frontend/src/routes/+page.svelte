@@ -1,7 +1,5 @@
 <script lang="ts">
     import Button from '$lib/components/ui/button/button.svelte';
-
-
     import RowCentered from '$lib/RowCentered.svelte';
     import BottleImage from '$lib/assets/Wine Bottle.png'
 </script>

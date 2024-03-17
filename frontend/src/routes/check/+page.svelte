@@ -2,18 +2,66 @@
     import Button from "$lib/components/ui/button/button.svelte";
     import * as Card from "$lib/components/ui/card";
     import * as Alert from "$lib/components/ui/alert";
-    import type { PageData } from './$types'
+    import * as Table from "$lib/components/ui/table";
+    
     import { onMount } from "svelte"
     import { defaultEvmStores,
             connected,
            } from "ethers-svelte"
     
-    import CheckForm from "$lib/formTemplates/CheckForm.svelte";      
+    import * as Form from "$lib/components/ui/form";
+    import { Input} from "$lib/components/ui/input";
+    import { checkSchema, type CheckSchema } from "$lib/schema";
+    import { ethers } from "ethers";
+
+    import { checkFields } from "$lib/schema";
     import RowCentered from '$lib/RowCentered.svelte'; 
     import ColCentered from "$lib/ColCentered.svelte";
     import BottleImage from '$lib/assets/Wine BottleSmall.png'
+    import {factoryContractAdress, factoryAbi, bottleAbi} from '$lib/constants'
+
+    import  { superForm, 
+                type Infer, 
+                type SuperValidated 
+            } from 'sveltekit-superforms'
+       
+    import { zodClient } from "sveltekit-superforms/adapters";
+
+    export let data: SuperValidated<Infer<CheckSchema>>;
+
+    const form = superForm(data, {
+        validators: zodClient(checkSchema),
+        dataType: "json",
+        });
+    const { form: formData, enhance } = form
+
     
-    export let data: PageData
+    let id:number;
+    let typeOfGrape:string;
+    let sunnyHours:string;
+    let timeOfHarvest:string;
+    let timeOfBottling:string;
+
+    async function submitForm(event: { currentTarget: EventTarget & HTMLFormElement }) {
+        const data = new FormData(event.currentTarget);
+        console.log(data.getAll('bottleID'))
+        const bottleID=data.getAll('bottleID').toString()
+        console.log(bottleID)
+        
+        const provider = new ethers.BrowserProvider((window as any).ethereum)
+        const signer = await provider.getSigner();
+        const factoryContract = new ethers.Contract(factoryContractAdress,factoryAbi,provider)
+        const contractAddress=await factoryContract.returnBottle(bottleID)  
+        const contract=new ethers.Contract(contractAddress,bottleAbi,signer)
+        
+        id= (await contract.getBottleID()).toString();
+        typeOfGrape= await contract.getTypeOfGrape()
+        sunnyHours=(await contract.getAmountOfSunnyHours()).toString();
+        timeOfHarvest= await contract.getTimeOfHarvest();
+        timeOfBottling= await contract.getTimeOfBottling();
+        
+    }
+
 
     async function connectWallet() {
         await defaultEvmStores.setProvider()
@@ -59,8 +107,39 @@
         </Card.Header>  
 
         <Card.Content>
-            <CheckForm data={data.form} />
+            <form method="POST" use:enhance on:submit={submitForm}>
+                <Form.Field {form} name="bottleID">
+                    <Form.Control let:attrs>
+                        <!-- <Form.Label>Üveg azonosító</Form.Label> -->
+                        <Input placeholder="Üveg azonosító" {...attrs} bind:value={$formData.bottleID} />
+                    </Form.Control>
+                <Form.FieldErrors />
+                </Form.Field>
             
+                <Form.Button class="mt-3">Ellenőrzés</Form.Button>
+            </form>
+            
+            <Table.Root>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.Head>Üveg Azonosító</Table.Head>
+                    <Table.Head>Szőlő fajta</Table.Head>
+                    <Table.Head>Napos órák száma</Table.Head>
+                    <Table.Head>Szüretelés időpontja</Table.Head>
+                    <Table.Head>Palackozás időpontja</Table.Head>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                    <Table.Row>
+                      <Table.Cell >{id}</Table.Cell>
+                      <Table.Cell>{typeOfGrape}</Table.Cell>
+                      <Table.Cell>{sunnyHours}</Table.Cell>
+                      <Table.Cell >{timeOfHarvest}</Table.Cell>
+                      <Table.Cell >{timeOfHarvest}</Table.Cell>
+                    </Table.Row>
+                </Table.Body>
+              </Table.Root>
+
         </Card.Content>
         
         

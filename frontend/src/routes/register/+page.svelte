@@ -96,32 +96,10 @@
                         </Form.Control>
                         <Form.FieldErrors />
                     </Form.Field>
-                
-                    <Form.Field {form} name="sunnyHours">
-                        <Form.Control let:attrs>
-                            <Form.Label>Napsütéses órák száma</Form.Label> 
-                            <Input {...attrs} bind:value={$formData.sunnyHours} />
-                        </Form.Control>
-                        <Form.FieldErrors />
-                    </Form.Field>
-                
-                    <Form.Field {form} name="timeOfHarvest">
-                        <Form.Control let:attrs>
-                            <Form.Label>Szüretelés időpontja</Form.Label> 
-                            <Input {...attrs} bind:value={$formData.timeOfHarvest} />
-                        </Form.Control>
-                        <Form.FieldErrors />
-                    </Form.Field>
-                
-                    <Form.Field {form} name="timeOfBottling">
-                        <Form.Control let:attrs>
-                            <Form.Label>Palackozás időpontja</Form.Label> 
-                            <Input {...attrs} bind:value={$formData.timeOfBottling} />
-                        </Form.Control>
-                        <Form.FieldErrors />
-                    </Form.Field>
                     <Form.Button class="mt-3 w-full">Regisztrálás</Form.Button>     
                 </form>
+
+
                 {#if (contractRegistered)}
                     <div class="flex justify-center items-center">   
                         <Alert.Root class="w-3/4 h-1/2 mt-5"  >

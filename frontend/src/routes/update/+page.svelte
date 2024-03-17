@@ -2,19 +2,62 @@
     import Button from "$lib/components/ui/button/button.svelte";
     import * as Card from "$lib/components/ui/card";
     import * as Alert from "$lib/components/ui/alert";
+    import * as Form from "$lib/components/ui/form";
+    import * as Table from "$lib/components/ui/table";
+    import { Input} from "$lib/components/ui/input";
+    import Label from "$lib/components/ui/label/label.svelte";
+
     import { onMount } from "svelte"
-    import type { PageData } from './$types'
+    import { writable } from 'svelte/store';
     import { defaultEvmStores,
             connected,
            } from "ethers-svelte"
+    import { ethers } from "ethers";
 
-    import RegisterForm from "$lib/formTemplates/RegisterForm.svelte";
+    import {factoryContractAdress, factoryAbi, bottleAbi} from '$lib/constants'
+    import { updateSchema, type UpdateSchema } from "$lib/schema";
     import RowCentered from '$lib/RowCentered.svelte';
     import ColCentered from "$lib/ColCentered.svelte";
     import BottleImage from '$lib/assets/Wine BottleSmall.png';
 
+    import { zodClient } from "sveltekit-superforms/adapters";
+    import  { superForm, 
+                    type Infer, 
+                    type SuperValidated 
+                } from 'sveltekit-superforms'      
+    
 
-    export let data: PageData
+
+    export let data: SuperValidated<Infer<UpdateSchema>>;
+        
+        const form = superForm(data, {
+        validators: zodClient(updateSchema),
+        dataType: "json",
+        });
+        const { form: formData, enhance } = form
+        
+    
+        
+    let bottleID:number;
+    let gotID = writable(false);
+    let infoArray: any[]
+
+    async function getID() {
+        const provider = new ethers.BrowserProvider((window as any).ethereum)
+        const signer = await provider.getSigner();
+        const factoryContract = new ethers.Contract(factoryContractAdress,factoryAbi,provider)
+        const contractAddress=await factoryContract.returnBottle(bottleID)  
+        const contract=new ethers.Contract(contractAddress,bottleAbi,signer)
+        
+        let id= (await contract.getBottleID()).toString();
+        let typeOfGrape= await contract.getTypeOfGrape()
+        let sunnyHours=(await contract.getAmountOfSunnyHours()).toString();
+        let timeOfHarvest= await contract.getTimeOfHarvest();
+        let timeOfBottling= await contract.getTimeOfBottling();
+        infoArray=[id,typeOfGrape,sunnyHours,timeOfHarvest,timeOfBottling]
+        $gotID=true;
+    }    
+        
     
     async function connectWallet() {
         await defaultEvmStores.setProvider()
@@ -46,17 +89,73 @@
         <img class="w-4/6 h-4/6 object-contain" src={BottleImage} alt="Wine Bottle" />
     </div>
     <Card.Root class="bg-slate-900 w-full sm:w-2/4 md:w-1/2 lg:w-1/3 h-5/6 ml-20 mr-20" >
-        <Card.Header>
-            <Card.Title class="text-4xl mb-2">Frissítsd egy üveg adatait</Card.Title>
-            
+        <Card.Header class="">
+            <Card.Title class="text-4xl mb">Frissítsd egy üveg adatait</Card.Title>
             <Card.Description class="text-base">
-                Azon adatokat, melyek változhatnak, frissítheted.
+                Adja meg az üveg azonosítóját, hogy frissíthesse zon adatokat, melyek változhatnak.
             </Card.Description>
         </Card.Header>  
 
         <Card.Content>
-            <RegisterForm data={data.form} />
+            {#if !$gotID}
+            
+            <form>
+                <Label>Üveg azonosítója</Label>
+                <Input type="number" bind:value={bottleID}/>
+                <Button on:click={getID} class="mt-2 w-full">Üveg lekérése</Button>
+            </form>
+            
+            {:else}
+            <Table.Root>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.Head>Üveg Azonosító</Table.Head>
+                    <Table.Head>Szőlő fajta</Table.Head>
+                    <Table.Head>Napos órák száma</Table.Head>
+                    <Table.Head>Szüretelés időpontja</Table.Head>
+                    <Table.Head>Palackozás időpontja</Table.Head>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                    <Table.Row>
+                      {#each infoArray as header}
+                        <Table.Cell>{header}</Table.Cell>
+                      {/each}
+                    </Table.Row>
+                </Table.Body>
+              </Table.Root>
+
+
+            <form method="POST" use:enhance>
+                <Form.Field {form} name="sunnyHours">
+                    <Form.Control let:attrs>
+                        <Form.Label>Napsütéses órák száma</Form.Label> 
+                        <Input {...attrs} bind:value={$formData.sunnyHours} />
+                    </Form.Control>
+                    <Form.FieldErrors />
+                </Form.Field>
+            
+                <Form.Field {form} name="timeOfHarvest">
+                    <Form.Control let:attrs>
+                        <Form.Label>Szüretelés időpontja</Form.Label> 
+                        <Input {...attrs} bind:value={$formData.timeOfHarvest} />
+                    </Form.Control>
+                    <Form.FieldErrors />
+                </Form.Field>
+            
+                <Form.Field {form} name="timeOfBottling">
+                    <Form.Control let:attrs>
+                        <Form.Label>Palackozás időpontja</Form.Label> 
+                        <Input {...attrs} bind:value={$formData.timeOfBottling} />
+                    </Form.Control>
+                    <Form.FieldErrors />
+                </Form.Field>
+            
+                <Form.Button class="mt-3 w-full">Frissités</Form.Button>     
+            </form>
+            {/if}
         </Card.Content>
+       
 
         <Card.Footer class="block">
             <div class="text-xl text-center text-slate-400">

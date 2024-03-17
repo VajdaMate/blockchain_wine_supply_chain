@@ -116,9 +116,9 @@
                 <Form.FieldErrors />
                 </Form.Field>
             
-                <Form.Button class="mt-3">Ellenőrzés</Form.Button>
+                <Form.Button class="mt-3 mb-3 w-full">Ellenőrzés</Form.Button>
             </form>
-            
+
             <Table.Root>
                 <Table.Header>
                   <Table.Row>

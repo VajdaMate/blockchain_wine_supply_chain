@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\Users\\vajda\\Desktop\\blockchain_wine_supply_chain\\Hardhat 1.0\\contracts\\Bottle.sol": {
-      "lastModificationDate": 1710175747353,
-      "contentHash": "595f231656c22c4210f750b9d5e5b0ed",
+      "lastModificationDate": 1710175851684,
+      "contentHash": "ac86a36689a71365aaf375cd5dc3051e",
       "sourceName": "contracts/Bottle.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -38,8 +38,8 @@
       ]
     },
     "C:\\Users\\vajda\\Desktop\\blockchain_wine_supply_chain\\Hardhat 1.0\\contracts\\BottleFactory.sol": {
-      "lastModificationDate": 1710175745836,
-      "contentHash": "ccd7382df907077257aa0470f4deeb26",
+      "lastModificationDate": 1710797075652,
+      "contentHash": "407364bd14bdef5ca94849f76a9112c3",
       "sourceName": "contracts/BottleFactory.sol",
       "solcConfig": {
         "version": "0.8.24",

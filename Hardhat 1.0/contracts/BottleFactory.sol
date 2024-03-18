@@ -15,6 +15,11 @@ contract BottleFactory{
         return bottleContracts.length;
     }
 
+    function returnLastBottle()public view returns (Bottle){
+        return Bottle(bottleContracts[bottleContracts.length-1]); 
+    }
+
+    
     function returnBottle(uint256 _index)public view returns (Bottle){
         return Bottle(bottleContracts[_index]); 
     }

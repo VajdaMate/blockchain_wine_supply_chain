@@ -18,10 +18,9 @@ export const registerSchema=z.object({
 export type RegisterSchema = typeof registerSchema;
 
 export const updateSchema=z.object({
-	typeOfGrape: z.string().min(3).max(16),
-	sunnyHours: z.string().min(2).max(5),
-	timeOfHarvest: z.string().min(6).max(100),
-	timeOfBottling: z.string().min(6).max(100),
+	sunnyHours: z.lazy(() => z.string().min(0).max(5)),
+	timeOfHarvest: z.lazy(() => z.string().min(0).max(11)),
+	timeOfBottling: z.lazy(() => z.string().min(0).max(11)),
 });
 export type UpdateSchema = typeof updateSchema;
 

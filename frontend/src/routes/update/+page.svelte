@@ -38,16 +38,21 @@
         
     
         
-    let bottleID:number;
+    let bottleID:number=0;
     let gotID = writable(false);
     let infoArray: any[]
+    let provider;
+    let signer;
+    let factoryContract;
+    let contractAddress;
+    let contract:any;
 
     async function getID() {
-        const provider = new ethers.BrowserProvider((window as any).ethereum)
-        const signer = await provider.getSigner();
-        const factoryContract = new ethers.Contract(factoryContractAdress,factoryAbi,provider)
-        const contractAddress=await factoryContract.returnBottle(bottleID)  
-        const contract=new ethers.Contract(contractAddress,bottleAbi,signer)
+        provider = new ethers.BrowserProvider((window as any).ethereum)
+        signer = await provider.getSigner();
+        factoryContract = new ethers.Contract(factoryContractAdress,factoryAbi,provider)
+        contractAddress=await factoryContract.returnBottle(bottleID)  
+        contract=new ethers.Contract(contractAddress,bottleAbi,signer)
         
         let id= (await contract.getBottleID()).toString();
         let typeOfGrape= await contract.getTypeOfGrape()
@@ -57,6 +62,21 @@
         infoArray=[id,typeOfGrape,sunnyHours,timeOfHarvest,timeOfBottling]
         $gotID=true;
     }    
+
+    async function updateBottle(event: { currentTarget: EventTarget & HTMLFormElement }) {
+        const data = new FormData(event.currentTarget);
+        console.log(data.getAll('sunnyHours'),data.getAll('timeOfHarvest'),data.getAll('timeOfBottling'))
+        const sunnyHours=data.getAll('sunnyHours').toString()
+        const timeOfHarvest=data.getAll('timeOfHarvest').toString()
+        const timeOfBottling=data.getAll('timeOfBottling').toString()
+
+        if (sunnyHours!='' )
+            contract.updateHours(sunnyHours);
+        if (timeOfHarvest!='' )
+            contract.updateHarvest(timeOfHarvest);
+        if (timeOfBottling!='' )
+            contract.updateBottling(timeOfBottling);
+    }
         
     
     async function connectWallet() {
@@ -126,7 +146,7 @@
               </Table.Root>
 
 
-            <form method="POST" use:enhance>
+              <form method="POST" use:enhance on:submit|preventDefault={updateBottle}>
                 <Form.Field {form} name="sunnyHours">
                     <Form.Control let:attrs>
                         <Form.Label>Napsütéses órák száma</Form.Label> 
@@ -153,6 +173,7 @@
             
                 <Form.Button class="mt-3 w-full">Frissités</Form.Button>     
             </form>
+
             {/if}
         </Card.Content>
        

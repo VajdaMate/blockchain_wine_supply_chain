@@ -3,69 +3,73 @@
     import * as Card from "$lib/components/ui/card";
     import * as Alert from "$lib/components/ui/alert";
     import * as Table from "$lib/components/ui/table";
+    import Label from "$lib/components/ui/label/label.svelte";
+    import { Input} from "$lib/components/ui/input";
     
     import { onMount } from "svelte"
-    import { defaultEvmStores,
-            connected,
-           } from "ethers-svelte"
     
-    import * as Form from "$lib/components/ui/form";
-    import { Input} from "$lib/components/ui/input";
-    import { checkSchema, type CheckSchema } from "$lib/schema";
+    import { defaultEvmStores,connected,} from "ethers-svelte"
     import { ethers } from "ethers";
 
-    import { checkFields } from "$lib/schema";
     import RowCentered from '$lib/RowCentered.svelte'; 
     import ColCentered from "$lib/ColCentered.svelte";
     import BottleImage from '$lib/assets/Wine BottleSmall.png'
-    import {factoryContractAdress, factoryAbi, bottleAbi} from '$lib/constants'
+    import {factoryContractAdress, factoryAbi, bottleAbi,headerArray} from '$lib/constants'
+    import { writable, type Writable } from "svelte/store";
 
-    import  { superForm, 
-                type Infer, 
-                type SuperValidated 
-            } from 'sveltekit-superforms'
-       
-    import { zodClient } from "sveltekit-superforms/adapters";
 
-    export let data: SuperValidated<Infer<CheckSchema>>;
-
-    const form = superForm(data, {
-        validators: zodClient(checkSchema),
-        dataType: "json",
-        });
-    const { form: formData, enhance } = form
-
-    
-    let id:number;
-    let typeOfGrape:string;
-    let sunnyHours:string;
-    let timeOfHarvest:string;
-    let timeOfBottling:string;
-
-    async function submitForm(event: { currentTarget: EventTarget & HTMLFormElement }) {
-        const data = new FormData(event.currentTarget);
-        console.log(data.getAll('bottleID'))
-        const bottleID=data.getAll('bottleID').toString()
-        console.log(bottleID)
-        
-        const provider = new ethers.BrowserProvider((window as any).ethereum)
-        const signer = await provider.getSigner();
-        const factoryContract = new ethers.Contract(factoryContractAdress,factoryAbi,provider)
-        const contractAddress=await factoryContract.returnBottle(bottleID)  
-        const contract=new ethers.Contract(contractAddress,bottleAbi,signer)
-        
-        id= (await contract.getBottleID()).toString();
-        typeOfGrape= await contract.getTypeOfGrape()
-        sunnyHours=(await contract.getAmountOfSunnyHours()).toString();
-        timeOfHarvest= await contract.getTimeOfHarvest();
-        timeOfBottling= await contract.getTimeOfBottling();
-        
+    class BottleInfo {
+        bottleID: number;
+        typeOfGrape: string;
+        sunnyHours: number;
+        timeOfHarvest: string;
+        timeOfBottling: string;
+        constructor(bottleID:number,typeOfGrape:string,sunnyHours:number,timeOfHarvest:string,timeOfBottling:string){
+            this.bottleID=bottleID;
+            this.typeOfGrape=typeOfGrape;
+            this.sunnyHours=sunnyHours;
+            this.timeOfHarvest=timeOfHarvest;
+            this.timeOfBottling=timeOfBottling;
+        }
     }
+    let ID:number;
+    const bottles: Writable<BottleInfo[]> = writable([]);
 
+    let provider;
+    let signer;
+    let factoryContract;
+    let contractAddress;
+    let contract:any;
+
+
+    async function submitForm() {
+        provider = new ethers.BrowserProvider((window as any).ethereum)
+        signer = await provider.getSigner();
+        factoryContract = new ethers.Contract(factoryContractAdress,factoryAbi,provider)
+        contractAddress=await factoryContract.returnBottle(ID)  
+        contract=new ethers.Contract(contractAddress,bottleAbi,signer)
+        console.log(contractAddress)
+        
+        let bottleID= await contract.getBottleID();
+        let typeOfGrape= await contract.getTypeOfGrape()
+        let sunnyHours=await contract.getAmountOfSunnyHours();
+        let timeOfHarvest= await contract.getTimeOfHarvest();
+        let timeOfBottling= await contract.getTimeOfBottling();
+        let bottle=new BottleInfo(bottleID,typeOfGrape,sunnyHours,timeOfHarvest,timeOfBottling)
+            // Update the bottles store using update function
+        bottles.update((currentBottles) => {
+            if (currentBottles.some(b => b.bottleID === bottleID)) {
+                return currentBottles;  // ID already exists, don't add
+            } 
+            else {
+            return [...currentBottles, bottle];  // Add the new bottle
+            }
+            });
+    }
 
     async function connectWallet() {
         await defaultEvmStores.setProvider()
-        
+       
     }
     onMount(() => {
         connectWallet()
@@ -91,7 +95,7 @@
 {:else}
 
 
-<RowCentered>
+<RowCentered >
     <div class="flex justify-center items-center">
         <img class="w-4/6 h-4/6 object-contain" src={BottleImage} alt="Wine Bottle" />
     </div>
@@ -106,40 +110,35 @@
         
         </Card.Header>  
 
-        <Card.Content>
-            <form method="POST" use:enhance on:submit={submitForm}>
-                <Form.Field {form} name="bottleID">
-                    <Form.Control let:attrs>
-                        <!-- <Form.Label>Üveg azonosító</Form.Label> -->
-                        <Input placeholder="Üveg azonosító" {...attrs} bind:value={$formData.bottleID} />
-                    </Form.Control>
-                <Form.FieldErrors />
-                </Form.Field>
-            
-                <Form.Button class="mt-3 mb-3 w-full">Ellenőrzés</Form.Button>
+        <Card.Content class="h-4/6">
+            <form>
+                <Label>Üveg azonosítója</Label>
+                <Input type="number" bind:value={ID}/>
+                <Button on:click={submitForm} class="mt-2 w-full">Üveg lekérése</Button>
             </form>
 
-            <Table.Root>
-                <Table.Header>
-                  <Table.Row>
-                    <Table.Head>Üveg Azonosító</Table.Head>
-                    <Table.Head>Szőlő fajta</Table.Head>
-                    <Table.Head>Napos órák száma</Table.Head>
-                    <Table.Head>Szüretelés időpontja</Table.Head>
-                    <Table.Head>Palackozás időpontja</Table.Head>
-                  </Table.Row>
-                </Table.Header>
-                <Table.Body>
+            <div class="overflow-y-scroll h-4/5">
+                <Table.Root class="">
+                    <Table.Header>
                     <Table.Row>
-                      <Table.Cell >{id}</Table.Cell>
-                      <Table.Cell>{typeOfGrape}</Table.Cell>
-                      <Table.Cell>{sunnyHours}</Table.Cell>
-                      <Table.Cell >{timeOfHarvest}</Table.Cell>
-                      <Table.Cell >{timeOfHarvest}</Table.Cell>
+                        {#each headerArray as header}
+                                <Table.Cell class="text-center" >{header}</Table.Cell>
+                        {/each}
                     </Table.Row>
-                </Table.Body>
-              </Table.Root>
-
+                    </Table.Header>
+                    <Table.Body>
+                        {#each $bottles as bottle}
+                        <Table.Row>
+                            <Table.Cell >{bottle.bottleID}</Table.Cell>
+                            <Table.Cell>{bottle.typeOfGrape}</Table.Cell>
+                            <Table.Cell>{bottle.sunnyHours}</Table.Cell>
+                            <Table.Cell >{bottle.timeOfHarvest}</Table.Cell>
+                            <Table.Cell >{bottle.timeOfBottling}</Table.Cell>
+                        </Table.Row>
+                        {/each}
+                    </Table.Body>
+                </Table.Root>
+            </div>
         </Card.Content>
         
         

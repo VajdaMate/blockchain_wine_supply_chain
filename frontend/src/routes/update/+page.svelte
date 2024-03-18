@@ -2,7 +2,6 @@
     import Button from "$lib/components/ui/button/button.svelte";
     import * as Card from "$lib/components/ui/card";
     import * as Alert from "$lib/components/ui/alert";
-    import * as Form from "$lib/components/ui/form";
     import * as Table from "$lib/components/ui/table";
     import { Input} from "$lib/components/ui/input";
     import Label from "$lib/components/ui/label/label.svelte";
@@ -12,9 +11,10 @@
     import { defaultEvmStores,
             connected,
            } from "ethers-svelte"
-    import { ethers } from "ethers";
+    
+           import { ethers } from "ethers";
 
-    import {factoryContractAdress, factoryAbi, bottleAbi} from '$lib/constants'
+    import {factoryContractAdress, factoryAbi, bottleAbi, headerArray} from '$lib/constants'
     import { updateSchema, type UpdateSchema } from "$lib/schema";
     import RowCentered from '$lib/RowCentered.svelte';
     import ColCentered from "$lib/ColCentered.svelte";
@@ -43,7 +43,7 @@
         
     
         
-    const headerArray=["Üveg Azonosító","Szőlő fajta","Napos órák száma","Szüretelés időpontja","Palackozás időpontja"]
+    
 
     let bottleID:number=0;
     let typeOfGrape:string;
@@ -153,6 +153,7 @@
         <img class="w-4/6 h-4/6 object-contain" src={BottleImage} alt="Wine Bottle" />
     </div>
     <Card.Root class="bg-slate-900 w-full sm:w-2/4 md:w-1/2 lg:w-1/3 h-5/6 ml-20 mr-20" >
+        
         <Card.Header class="">
             <Card.Title class="text-4xl mb">Frissítsd egy üveg adatait</Card.Title>
             <Card.Description class="text-base">
@@ -173,7 +174,7 @@
                 <Table.Header>
                   <Table.Row>
                         {#each headerArray as header}
-                            <Table.Cell>{header}</Table.Cell>
+                            <Table.Cell class="text-center" >{header}</Table.Cell>
                         {/each}
                   </Table.Row>
                 </Table.Header>
@@ -184,7 +185,7 @@
                         {/each}
                     </Table.Row>
                 </Table.Body>
-              </Table.Root>
+            </Table.Root>
            
             <form>
                 <Label>Napsütéses órák száma</Label>
@@ -216,15 +217,17 @@
 
         <Card.Footer class="block">
             <div class="text-xl text-center text-slate-400">
-        
                Új üveget szeretnék registrálni, vagy ellenőrizni? Ellenőrizd, vagy frissítsd:
            </div>
+
            <div class="flex justify-evenly">
                <Button class="text-xl mt-1 " variant="link" href="/register">Regisztráció</Button> 
                <Button class="text-xl mt-1" variant="link" href="/check">Ellenőrzés</Button> 
            </div>
         </Card.Footer>
+    
     </Card.Root>
+    
     <div class="flex justify-center items-center">
         <img class="w-4/6 h-4/6 object-contain" src={BottleImage} alt="Wine Bottle" />
     </div>

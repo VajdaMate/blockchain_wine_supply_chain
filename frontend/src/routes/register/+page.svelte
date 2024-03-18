@@ -47,16 +47,26 @@
 
         async function submitForm(event: { currentTarget: EventTarget & HTMLFormElement }) {
             const data = new FormData(event.currentTarget);
-            console.log(data.getAll('typeOfGrape'),data.getAll('sunnyHours'),data.getAll('timeOfHarvest'),data.getAll('timeOfBottling'))
             const typeOfGrape=data.getAll('typeOfGrape').toString()
             console.log(typeOfGrape)
             const provider = new ethers.BrowserProvider((window as any).ethereum)
             const signer = await provider.getSigner();
             const factoryContract= new ethers.Contract(factoryContractAdress,factoryAbi,signer)
-            factoryContract.createBottle(typeOfGrape)
-            contractRegistered=true;
+            const tx = await factoryContract.createBottle(typeOfGrape);
+
+            if ((tx as any).wait) { 
+            const receipt = await (tx as any).wait(); 
+
+            if (receipt.status === 1) {
+                contractRegistered = true;
+                console.log("Transaction successful!");
+            } else {
+                console.error("Transaction failed:", receipt);
+            }
+            
+            //contractRegistered=true;
             console.log(factoryContract)
-           
+            }
         }
 
  
@@ -109,10 +119,7 @@
                             </Alert.Description>
                         </Alert.Root>
                     </div>
-                        
-                    
                 {/if}
-
             </Card.Content>
 
            
@@ -127,7 +134,9 @@
                 <Button class="text-xl mt-1" variant="link" href="/update">Frissítés</Button> 
             </div>
             </Card.Footer>
+        
         </Card.Root>
+
         <div class="flex justify-center items-center">
             <img class="w-4/6 h-4/6 object-contain" src={BottleImage} alt="Wine Bottle" />
         </div>

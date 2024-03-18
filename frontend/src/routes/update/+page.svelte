@@ -26,7 +26,12 @@
                     type SuperValidated 
                 } from 'sveltekit-superforms'      
     
-
+    interface BottleInfo {
+  bottleID: number;
+  sunnyHours: number;
+  timeOfHarvest: string;
+  timeOfBottling: string;
+}            
 
     export let data: SuperValidated<Infer<UpdateSchema>>;
         
@@ -38,9 +43,20 @@
         
     
         
+    const headerArray=["Üveg Azonosító","Szőlő fajta","Napos órák száma","Szüretelés időpontja","Palackozás időpontja"]
+
     let bottleID:number=0;
+    let typeOfGrape:string;
+    let sunnyHours:number;
+    let timeOfHarvest:string;
+    let timeOfBottling:string;
+    
+    let infoArray:any;
     let gotID = writable(false);
-    let infoArray: any[]
+
+
+
+    
     let provider;
     let signer;
     let factoryContract;
@@ -54,31 +70,59 @@
         contractAddress=await factoryContract.returnBottle(bottleID)  
         contract=new ethers.Contract(contractAddress,bottleAbi,signer)
         
-        let id= (await contract.getBottleID()).toString();
-        let typeOfGrape= await contract.getTypeOfGrape()
-        let sunnyHours=(await contract.getAmountOfSunnyHours()).toString();
-        let timeOfHarvest= await contract.getTimeOfHarvest();
-        let timeOfBottling= await contract.getTimeOfBottling();
-        infoArray=[id,typeOfGrape,sunnyHours,timeOfHarvest,timeOfBottling]
+        bottleID= (await contract.getBottleID()).toString();
+        typeOfGrape= await contract.getTypeOfGrape()
+        sunnyHours=(await contract.getAmountOfSunnyHours()).toString();
+        timeOfHarvest= await contract.getTimeOfHarvest();
+        timeOfBottling= await contract.getTimeOfBottling();
+
         $gotID=true;
-    }    
-
-    async function updateBottle(event: { currentTarget: EventTarget & HTMLFormElement }) {
-        const data = new FormData(event.currentTarget);
-        console.log(data.getAll('sunnyHours'),data.getAll('timeOfHarvest'),data.getAll('timeOfBottling'))
-        const sunnyHours=data.getAll('sunnyHours').toString()
-        const timeOfHarvest=data.getAll('timeOfHarvest').toString()
-        const timeOfBottling=data.getAll('timeOfBottling').toString()
-
-        if (sunnyHours!='' )
-            contract.updateHours(sunnyHours);
-        if (timeOfHarvest!='' )
-            contract.updateHarvest(timeOfHarvest);
-        if (timeOfBottling!='' )
-            contract.updateBottling(timeOfBottling);
+        infoArray= writable([bottleID, typeOfGrape, sunnyHours, timeOfHarvest, timeOfBottling]);
     }
+
+
+    async function sunnyUpdate(){
+        const tx = await contract.updateHours(sunnyHours.toString());
         
-    
+        const success = await (tx as any).wait(); 
+
+        if (success.status === 1) {
+            $infoArray[2]=sunnyHours;
+            console.log("Successfully updated!");
+        } 
+        else {
+            console.error("Transaction failed:", success);
+        }
+    }
+
+
+    async function harvestUpdate(){
+        const tx= await contract.updateHarvest(timeOfHarvest);
+        
+        const success = await (tx as any).wait(); 
+        if (success.status === 1) {
+            $infoArray[3]=timeOfHarvest;
+            console.log("Successfully updated!");
+        } 
+        else {
+            console.error("Transaction failed:", success);
+        }
+
+    }   
+    async function bottlingUpdate(){
+        const tx = await contract.updateBottling(timeOfBottling);
+       
+        const success = await (tx as any).wait(); 
+        if (success.status === 1) {
+            $infoArray[4]=timeOfBottling;
+            console.log("Successfully updated!");
+        } 
+        else {
+            console.error("Transaction failed:", success);
+        }
+    }       
+
+  
     async function connectWallet() {
         await defaultEvmStores.setProvider()
         
@@ -112,13 +156,12 @@
         <Card.Header class="">
             <Card.Title class="text-4xl mb">Frissítsd egy üveg adatait</Card.Title>
             <Card.Description class="text-base">
-                Adja meg az üveg azonosítóját, hogy frissíthesse zon adatokat, melyek változhatnak.
+                Adja meg az üveg azonosítóját, hogy frissíthesse azon adatokat, melyek változhatnak.
             </Card.Description>
         </Card.Header>  
 
         <Card.Content>
             {#if !$gotID}
-            
             <form>
                 <Label>Üveg azonosítója</Label>
                 <Input type="number" bind:value={bottleID}/>
@@ -129,51 +172,44 @@
             <Table.Root>
                 <Table.Header>
                   <Table.Row>
-                    <Table.Head>Üveg Azonosító</Table.Head>
-                    <Table.Head>Szőlő fajta</Table.Head>
-                    <Table.Head>Napos órák száma</Table.Head>
-                    <Table.Head>Szüretelés időpontja</Table.Head>
-                    <Table.Head>Palackozás időpontja</Table.Head>
+                        {#each headerArray as header}
+                            <Table.Cell>{header}</Table.Cell>
+                        {/each}
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
                     <Table.Row>
-                      {#each infoArray as header}
-                        <Table.Cell>{header}</Table.Cell>
-                      {/each}
+                        {#each $infoArray as info}
+                            <Table.Cell>{info}</Table.Cell>
+                        {/each}
                     </Table.Row>
                 </Table.Body>
               </Table.Root>
-
-
-              <form method="POST" use:enhance on:submit|preventDefault={updateBottle}>
-                <Form.Field {form} name="sunnyHours">
-                    <Form.Control let:attrs>
-                        <Form.Label>Napsütéses órák száma</Form.Label> 
-                        <Input {...attrs} bind:value={$formData.sunnyHours} />
-                    </Form.Control>
-                    <Form.FieldErrors />
-                </Form.Field>
-            
-                <Form.Field {form} name="timeOfHarvest">
-                    <Form.Control let:attrs>
-                        <Form.Label>Szüretelés időpontja</Form.Label> 
-                        <Input {...attrs} bind:value={$formData.timeOfHarvest} />
-                    </Form.Control>
-                    <Form.FieldErrors />
-                </Form.Field>
-            
-                <Form.Field {form} name="timeOfBottling">
-                    <Form.Control let:attrs>
-                        <Form.Label>Palackozás időpontja</Form.Label> 
-                        <Input {...attrs} bind:value={$formData.timeOfBottling} />
-                    </Form.Control>
-                    <Form.FieldErrors />
-                </Form.Field>
-            
-                <Form.Button class="mt-3 w-full">Frissités</Form.Button>     
+           
+            <form>
+                <Label>Napsütéses órák száma</Label>
+                <div class="flex">
+                    <Input type="number" bind:value={sunnyHours}/>
+                    <Button on:click={sunnyUpdate} class="ml-2">Frissítés</Button>
+                </div>
             </form>
-
+            
+            <form>
+                <Label>Szüretelés időpontja órák száma</Label>
+                <div class="flex">
+                    <Input type="string" bind:value={timeOfHarvest}/>
+                    <Button on:click={harvestUpdate} class="ml-2">Frissítés</Button>
+                </div>
+            </form>  
+            
+            <form>
+                <Label>Palackozás időpontja</Label>
+                <div class="flex">
+                    <Input type="string" bind:value={timeOfBottling}/>
+                    <Button on:click={bottlingUpdate} class="ml-2">Frissítés</Button>
+                </div>
+            </form>    
+            
             {/if}
         </Card.Content>
        

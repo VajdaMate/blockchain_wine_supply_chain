@@ -78,7 +78,7 @@ contract BottleStore{
 
     function updateTimeOfBottling(uint256 _id, string memory _timeOfBottling) public {
         require(bottles[_id].owner == msg.sender, "Csak saj\u00E1t \u00FCveget friss\u00EDthetsz!");
-        require(keccak256(abi.encodePacked(bottles[_id].timeOfBottling)) == keccak256(abi.encodePacked("M\u00e9g, nem palackozott")), 
+        require(keccak256(abi.encodePacked(bottles[_id].timeOfBottling)) == keccak256(abi.encodePacked("M\u00e9g nem palackozott")), 
         "Ha egyszer meg lett adva a palackoz\\u00E1s ideje, nem lehet friss\\u00EDteni!");
         bottles[_id].timeOfBottling=_timeOfBottling;
     }

@@ -8,75 +8,64 @@
 
     import { onMount } from "svelte";
 
-    import { defaultEvmStores, connected } from "ethers-svelte";
+    import { defaultEvmStores as evm, connected } from "ethers-svelte";
     import { ethers } from "ethers";
 
     import RowCentered from "$lib/RowCentered.svelte";
     import ColCentered from "$lib/ColCentered.svelte";
     import BottleImage from "$lib/assets/Wine BottleSmall.png";
     import {
-        factoryContractAdress,
-        factoryAbi,
-        bottleAbi,
+        contractAdress,
+        BottleStoreABI,
         headerArray,
     } from "$lib/constants";
+
     import { writable, type Writable } from "svelte/store";
 
-    class BottleInfo {
-        bottleID: number;
+    class Bottle {
+        bottleId: number;
         typeOfGrape: string;
         sunnyHours: number;
+        rainMilimeters: number;
         timeOfHarvest: string;
         timeOfBottling: string;
         constructor(
-            bottleID: number,
+            bottleId: number,
             typeOfGrape: string,
             sunnyHours: number,
+            rainMilimeters: number,
             timeOfHarvest: string,
             timeOfBottling: string,
         ) {
-            this.bottleID = bottleID;
+            this.bottleId = bottleId;
             this.typeOfGrape = typeOfGrape;
             this.sunnyHours = sunnyHours;
+            this.rainMilimeters = rainMilimeters;
             this.timeOfHarvest = timeOfHarvest;
             this.timeOfBottling = timeOfBottling;
         }
     }
+
     let ID: number;
-    const bottles: Writable<BottleInfo[]> = writable([]);
+    const bottles: Writable<Bottle[]> = writable([]);
 
-    let provider;
-    let signer;
-    let factoryContract;
-    let contractAddress;
-    let contract: any;
+    let provider: ethers.BrowserProvider
+    let signer: ethers.JsonRpcSigner
+    let BottleStore: ethers.Contract
 
-    async function submitForm() {
-        provider = new ethers.BrowserProvider((window as any).ethereum);
-        signer = await provider.getSigner();
-        factoryContract = new ethers.Contract(
-            factoryContractAdress,
-            factoryAbi,
-            provider,
+    async function listByID() {
+        let temp = await BottleStore.returnBottleByID(ID);
+        let bottle = new Bottle(
+            temp.bottleId,
+            temp.typeOfGrape,
+            temp.sunnyHours,
+            temp.rainMilimeters,
+            temp.timeOfHarvest,
+            temp.timeOfBottling,
         );
-        contractAddress = await factoryContract.returnBottle(ID);
-        contract = new ethers.Contract(contractAddress, bottleAbi, signer);
-        console.log(contractAddress);
 
-        let bottleID: number = await contract.getBottleID();
-        let typeOfGrape: string = await contract.getTypeOfGrape();
-        let sunnyHour: number = await contract.getAmountOfSunnyHours();
-        let timeOfHarvest: string = await contract.getTimeOfHarvest();
-        let timeOfBottling: string = await contract.getTimeOfBottling();
-        let bottle = new BottleInfo(
-            bottleID,
-            typeOfGrape,
-            sunnyHour,
-            timeOfHarvest,
-            timeOfBottling,
-        );
         bottles.update((currentBottles) => {
-            if (currentBottles.some((b) => b.bottleID === bottleID)) {
+            if (currentBottles.some((b) => b.bottleId === bottle.bottleId)) {
                 return currentBottles;
             } else {
                 return [...currentBottles, bottle];
@@ -84,11 +73,49 @@
         });
     }
 
-    async function connectWallet() {
-        await defaultEvmStores.setProvider();
+    async function listByOwner(){
+        let temp=await BottleStore.ownersBottles(signer.getAddress());
+        console.log(temp.length)
+        let bottleArray: Bottle[] = [];
+        temp.forEach((bottle:Bottle) => {
+            console.log(bottle)
+            let tempBottle = new Bottle(
+                bottle.bottleId,
+                bottle.typeOfGrape,
+                bottle.sunnyHours,
+                bottle.rainMilimeters,
+                bottle.timeOfHarvest,
+                bottle.timeOfBottling,
+            );
+            bottleArray.push(tempBottle);
+        });
+        bottles.set(bottleArray);
+
     }
-    onMount(() => {
-        connectWallet();
+
+
+
+    async function connectWallet() {
+        await evm.setProvider();
+    }
+
+    async function connectContract() {
+        provider = new ethers.BrowserProvider((window as any).ethereum);
+        signer = await provider.getSigner();
+        BottleStore = new ethers.Contract(
+            contractAdress,
+            BottleStoreABI,
+            signer,
+        );
+    }
+
+    async function connect(){
+        await connectWallet();
+        await connectContract();
+    }
+
+    onMount(async () => {
+       await connect();
     });
 </script>
 
@@ -134,37 +161,32 @@
 
             <Card.Content class="h-4/6">
                 <form>
-                    <Label>Üveg azonosítója</Label>
+                    <Label>Üveg lekérés azonosító alapján</Label>
                     <Input type="number" bind:value={ID} />
-                    <Button on:click={submitForm} class="mt-2 w-full"
-                        >Üveg lekérése</Button
-                    >
+                    <Button on:click={listByID} class="mt-2 w-full">Üveg lekérése megadott azonosítóval</Button>
+                    <Button on:click={listByOwner} class="mt-2 w-full">Saját címmel regisztrált üvegek lekérése</Button>
                 </form>
+                
+
 
                 <div class="overflow-y-scroll h-4/5">
                     <Table.Root class="">
                         <Table.Header>
                             <Table.Row>
                                 {#each headerArray as header}
-                                    <Table.Cell class="text-center"
-                                        >{header}</Table.Cell
-                                    >
+                                    <Table.Cell class="text-center">{header}</Table.Cell>
                                 {/each}
                             </Table.Row>
                         </Table.Header>
                         <Table.Body>
                             {#each $bottles as bottle}
                                 <Table.Row>
-                                    <Table.Cell>{bottle.bottleID}</Table.Cell>
-                                    <Table.Cell>{bottle.typeOfGrape}</Table.Cell
-                                    >
+                                    <Table.Cell>{bottle.bottleId}</Table.Cell>
+                                    <Table.Cell>{bottle.typeOfGrape}</Table.Cell>
                                     <Table.Cell>{bottle.sunnyHours}</Table.Cell>
-                                    <Table.Cell
-                                        >{bottle.timeOfHarvest}</Table.Cell
-                                    >
-                                    <Table.Cell
-                                        >{bottle.timeOfBottling}</Table.Cell
-                                    >
+                                    <Table.Cell>{bottle.rainMilimeters}</Table.Cell>
+                                    <Table.Cell>{bottle.timeOfHarvest}</Table.Cell>
+                                    <Table.Cell>{bottle.timeOfBottling}</Table.Cell>
                                 </Table.Row>
                             {/each}
                         </Table.Body>

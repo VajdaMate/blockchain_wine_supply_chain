@@ -3,235 +3,234 @@
     import * as Card from "$lib/components/ui/card";
     import * as Alert from "$lib/components/ui/alert";
     import * as Table from "$lib/components/ui/table";
-    import { Input} from "$lib/components/ui/input";
+    import { Input } from "$lib/components/ui/input";
     import Label from "$lib/components/ui/label/label.svelte";
 
-    import { onMount } from "svelte"
-    import { writable } from 'svelte/store';
-    import { defaultEvmStores,
-            connected,
-           } from "ethers-svelte"
-    
-           import { ethers } from "ethers";
+    import { onMount } from "svelte";
+    import { writable } from "svelte/store";
+    import { defaultEvmStores, connected } from "ethers-svelte";
 
-    import {factoryContractAdress, factoryAbi, bottleAbi, headerArray} from '$lib/constants'
-    import { updateSchema, type UpdateSchema } from "$lib/schema";
-    import RowCentered from '$lib/RowCentered.svelte';
+    import { ethers } from "ethers";
+
+    import {
+        factoryContractAdress,
+        factoryAbi,
+        bottleAbi,
+        headerArray,
+    } from "$lib/constants";
+    import RowCentered from "$lib/RowCentered.svelte";
     import ColCentered from "$lib/ColCentered.svelte";
-    import BottleImage from '$lib/assets/Wine BottleSmall.png';
+    import BottleImage from "$lib/assets/Wine BottleSmall.png";
 
-    import { zodClient } from "sveltekit-superforms/adapters";
-    import  { superForm, 
-                    type Infer, 
-                    type SuperValidated 
-                } from 'sveltekit-superforms'      
-    
-    interface BottleInfo {
-  bottleID: number;
-  sunnyHours: number;
-  timeOfHarvest: string;
-  timeOfBottling: string;
-}            
+    let bottleID: number;
+    let typeOfGrape: string;
+    let sunnyHours: number;
+    let timeOfHarvest: string;
+    let timeOfBottling: string;
 
-    export let data: SuperValidated<Infer<UpdateSchema>>;
-        
-        const form = superForm(data, {
-        validators: zodClient(updateSchema),
-        dataType: "json",
-        });
-        const { form: formData, enhance } = form
-        
-    
-        
-    
-
-    let bottleID:number=0;
-    let typeOfGrape:string;
-    let sunnyHours:number;
-    let timeOfHarvest:string;
-    let timeOfBottling:string;
-    
-    let infoArray:any;
+    let infoArray: any;
     let gotID = writable(false);
 
-
-
-    
     let provider;
     let signer;
     let factoryContract;
     let contractAddress;
-    let contract:any;
+    let contract: any;
 
     async function getID() {
-        provider = new ethers.BrowserProvider((window as any).ethereum)
+        provider = new ethers.BrowserProvider((window as any).ethereum);
         signer = await provider.getSigner();
-        factoryContract = new ethers.Contract(factoryContractAdress,factoryAbi,provider)
-        contractAddress=await factoryContract.returnBottle(bottleID)  
-        contract=new ethers.Contract(contractAddress,bottleAbi,signer)
+        factoryContract = new ethers.Contract(
+            factoryContractAdress,
+            factoryAbi,
+            provider,
+        );
         
-        bottleID= (await contract.getBottleID()).toString();
-        typeOfGrape= await contract.getTypeOfGrape()
-        sunnyHours=(await contract.getAmountOfSunnyHours()).toString();
-        timeOfHarvest= await contract.getTimeOfHarvest();
-        timeOfBottling= await contract.getTimeOfBottling();
+        contractAddress = await factoryContract.returnBottle(bottleID);
+        contract = new ethers.Contract(contractAddress, bottleAbi, signer);
 
-        $gotID=true;
-        infoArray= writable([bottleID, typeOfGrape, sunnyHours, timeOfHarvest, timeOfBottling]);
+        bottleID = (await contract.getBottleID()).toString();
+        typeOfGrape = await contract.getTypeOfGrape();
+        sunnyHours = (await contract.getAmountOfSunnyHours()).toString();
+        timeOfHarvest = await contract.getTimeOfHarvest();
+        timeOfBottling = await contract.getTimeOfBottling();
+
+        $gotID = true;
+        infoArray = writable([
+            bottleID,
+            typeOfGrape,
+            sunnyHours,
+            timeOfHarvest,
+            timeOfBottling,
+        ]);
     }
 
-
-    async function sunnyUpdate(){
-        const tx = await contract.updateHours(sunnyHours.toString());
-        
-        const success = await (tx as any).wait(); 
+    async function sunnyUpdate() {
+        const tx = await contract.updateHours(sunnyHours);
+        const success = await (tx as any).wait();
 
         if (success.status === 1) {
-            $infoArray[2]=sunnyHours;
+            $infoArray[2] = sunnyHours;
             console.log("Successfully updated!");
-        } 
-        else {
+        } else {
             console.error("Transaction failed:", success);
         }
     }
 
+    async function harvestUpdate() {
+        const tx = await contract.updateHarvest(timeOfHarvest);
 
-    async function harvestUpdate(){
-        const tx= await contract.updateHarvest(timeOfHarvest);
-        
-        const success = await (tx as any).wait(); 
+        const success = await (tx as any).wait();
         if (success.status === 1) {
-            $infoArray[3]=timeOfHarvest;
+            $infoArray[3] = timeOfHarvest;
             console.log("Successfully updated!");
-        } 
-        else {
+        } else {
             console.error("Transaction failed:", success);
         }
-
-    }   
-    async function bottlingUpdate(){
+    }
+    async function bottlingUpdate() {
         const tx = await contract.updateBottling(timeOfBottling);
-       
-        const success = await (tx as any).wait(); 
+
+        const success = await (tx as any).wait();
         if (success.status === 1) {
-            $infoArray[4]=timeOfBottling;
+            $infoArray[4] = timeOfBottling;
             console.log("Successfully updated!");
-        } 
-        else {
+        } else {
             console.error("Transaction failed:", success);
         }
-    }       
+    }
 
-  
     async function connectWallet() {
-        await defaultEvmStores.setProvider()
-        
+        await defaultEvmStores.setProvider();
     }
     onMount(() => {
-        connectWallet()
-    })
-
+        connectWallet();
+    });
 </script>
 
-
 {#if !$connected}
-
-<ColCentered>
-    <Alert.Root class="w-3/4 p-8" >
-            <Alert.Title class="text-5xl text-slate-400">Kérlek csatlakoztasd az ethereum pénztárcád!</Alert.Title>
+    <ColCentered>
+        <Alert.Root class="w-3/4 p-8">
+            <Alert.Title class="text-5xl text-slate-400"
+                >Kérlek csatlakoztasd az ethereum pénztárcád!</Alert.Title
+            >
             <Alert.Description class="text-2xl text-slate-400">
-            Csatlakozás nélkül nem tudsz interaktálni a blokklánccal.
+                Csatlakozás nélkül nem tudsz interaktálni a blokklánccal.
             </Alert.Description>
-    </Alert.Root>
-    <Button class="text-4xl text-slate-600 m-10 p-10" on:click={connectWallet}>Connect</Button>
-</ColCentered>
-
+        </Alert.Root>
+        <Button
+            class="text-4xl text-slate-600 m-10 p-10"
+            on:click={connectWallet}>Connect</Button
+        >
+    </ColCentered>
 {:else}
+    <RowCentered>
+        <div class="flex justify-center items-center">
+            <img
+                class="w-4/6 h-4/6 object-contain"
+                src={BottleImage}
+                alt="Wine Bottle"
+            />
+        </div>
+        <Card.Root
+            class="bg-slate-900 w-full sm:w-2/4 md:w-1/2 lg:w-1/3 h-5/6 ml-20 mr-20"
+        >
+            <Card.Header class="">
+                <Card.Title class="text-4xl mb"
+                    >Frissítsd egy üveg adatait</Card.Title
+                >
+                <Card.Description class="text-base">
+                    Adja meg az üveg azonosítóját, hogy frissíthesse azon
+                    adatokat, melyek változhatnak.
+                </Card.Description>
+            </Card.Header>
 
-<RowCentered>
-    <div class="flex justify-center items-center">
-        <img class="w-4/6 h-4/6 object-contain" src={BottleImage} alt="Wine Bottle" />
-    </div>
-    <Card.Root class="bg-slate-900 w-full sm:w-2/4 md:w-1/2 lg:w-1/3 h-5/6 ml-20 mr-20" >
-        
-        <Card.Header class="">
-            <Card.Title class="text-4xl mb">Frissítsd egy üveg adatait</Card.Title>
-            <Card.Description class="text-base">
-                Adja meg az üveg azonosítóját, hogy frissíthesse azon adatokat, melyek változhatnak.
-            </Card.Description>
-        </Card.Header>  
+            <Card.Content>
+                {#if !$gotID}
+                    <form>
+                        <Label>Üveg azonosítója</Label>
+                        <Input type="number" bind:value={bottleID} />
+                        <Button on:click={getID} class="mt-2 w-full"
+                            >Üveg lekérése</Button
+                        >
+                    </form>
+                {:else}
+                    <Table.Root>
+                        <Table.Header>
+                            <Table.Row>
+                                {#each headerArray as header}
+                                    <Table.Cell class="text-center"
+                                        >{header}</Table.Cell
+                                    >
+                                {/each}
+                            </Table.Row>
+                        </Table.Header>
+                        <Table.Body>
+                            <Table.Row>
+                                {#each $infoArray as info}
+                                    <Table.Cell>{info}</Table.Cell>
+                                {/each}
+                            </Table.Row>
+                        </Table.Body>
+                    </Table.Root>
 
-        <Card.Content>
-            {#if !$gotID}
-            <form>
-                <Label>Üveg azonosítója</Label>
-                <Input type="number" bind:value={bottleID}/>
-                <Button on:click={getID} class="mt-2 w-full">Üveg lekérése</Button>
-            </form>
-            
-            {:else}
-            <Table.Root>
-                <Table.Header>
-                  <Table.Row>
-                        {#each headerArray as header}
-                            <Table.Cell class="text-center" >{header}</Table.Cell>
-                        {/each}
-                  </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                    <Table.Row>
-                        {#each $infoArray as info}
-                            <Table.Cell>{info}</Table.Cell>
-                        {/each}
-                    </Table.Row>
-                </Table.Body>
-            </Table.Root>
-           
-            <form>
-                <Label>Napsütéses órák száma</Label>
-                <div class="flex">
-                    <Input type="number" bind:value={sunnyHours}/>
-                    <Button on:click={sunnyUpdate} class="ml-2">Frissítés</Button>
+                    <form>
+                        <Label>Napsütéses órák száma</Label>
+                        <div class="flex">
+                            <Input type="number" bind:value={sunnyHours} />
+                            <Button on:click={sunnyUpdate} class="ml-2"
+                                >Frissítés</Button
+                            >
+                        </div>
+                    </form>
+
+                    <form>
+                        <Label>Szüretelés időpontja órák száma</Label>
+                        <div class="flex">
+                            <Input type="string" bind:value={timeOfHarvest} />
+                            <Button on:click={harvestUpdate} class="ml-2"
+                                >Frissítés</Button
+                            >
+                        </div>
+                    </form>
+
+                    <form>
+                        <Label>Palackozás időpontja</Label>
+                        <div class="flex">
+                            <Input type="string" bind:value={timeOfBottling} />
+                            <Button on:click={bottlingUpdate} class="ml-2"
+                                >Frissítés</Button
+                            >
+                        </div>
+                    </form>
+                {/if}
+            </Card.Content>
+
+            <Card.Footer class="block">
+                <div class="text-xl text-center text-slate-400">
+                    Új üveget szeretnék registrálni, vagy ellenőrizni?
+                    Ellenőrizd, vagy frissítsd:
                 </div>
-            </form>
-            
-            <form>
-                <Label>Szüretelés időpontja órák száma</Label>
-                <div class="flex">
-                    <Input type="string" bind:value={timeOfHarvest}/>
-                    <Button on:click={harvestUpdate} class="ml-2">Frissítés</Button>
+
+                <div class="flex justify-evenly">
+                    <Button
+                        class="text-xl mt-1 "
+                        variant="link"
+                        href="/register">Regisztráció</Button
+                    >
+                    <Button class="text-xl mt-1" variant="link" href="/check"
+                        >Ellenőrzés</Button
+                    >
                 </div>
-            </form>  
-            
-            <form>
-                <Label>Palackozás időpontja</Label>
-                <div class="flex">
-                    <Input type="string" bind:value={timeOfBottling}/>
-                    <Button on:click={bottlingUpdate} class="ml-2">Frissítés</Button>
-                </div>
-            </form>    
-            
-            {/if}
-        </Card.Content>
-       
+            </Card.Footer>
+        </Card.Root>
 
-        <Card.Footer class="block">
-            <div class="text-xl text-center text-slate-400">
-               Új üveget szeretnék registrálni, vagy ellenőrizni? Ellenőrizd, vagy frissítsd:
-           </div>
-
-           <div class="flex justify-evenly">
-               <Button class="text-xl mt-1 " variant="link" href="/register">Regisztráció</Button> 
-               <Button class="text-xl mt-1" variant="link" href="/check">Ellenőrzés</Button> 
-           </div>
-        </Card.Footer>
-    
-    </Card.Root>
-    
-    <div class="flex justify-center items-center">
-        <img class="w-4/6 h-4/6 object-contain" src={BottleImage} alt="Wine Bottle" />
-    </div>
-
-</RowCentered>
-
+        <div class="flex justify-center items-center">
+            <img
+                class="w-4/6 h-4/6 object-contain"
+                src={BottleImage}
+                alt="Wine Bottle"
+            />
+        </div>
+    </RowCentered>
 {/if}

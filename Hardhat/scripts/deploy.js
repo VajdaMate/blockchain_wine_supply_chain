@@ -2,10 +2,10 @@ const hre = require("hardhat");
 
 async function main() {
   
-  const FactoryContract = await hre.ethers.deployContract("BottleFactory")
+  const BottleStore = await hre.ethers.deployContract("BottleStore")
   console.log("Deploying Contract...")
-  await FactoryContract.waitForDeployment();
-  console.log(`Deployed to ${FactoryContract.target}`);
+  await BottleStore.waitForDeployment();
+  console.log(`Deployed to ${BottleStore.target}`);
 }
 
 main()

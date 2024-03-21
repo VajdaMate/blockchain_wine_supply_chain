@@ -13,15 +13,12 @@ contract Bottle  {
     }
 
     function updateHours(uint256 _amountOfSunnyHours) public {
-        //require(_amountOfSunnyHours==amountOfSunnyHours);
         amountOfSunnyHours = _amountOfSunnyHours;
     }
     function updateHarvest(string memory _timeOfHarvest) public  {
-        //require((keccak256(abi.encodePacked((_timeOfHarvest))) == keccak256(abi.encodePacked((timeOfHarvest)))));
         timeOfHarvest = _timeOfHarvest;
     }
     function updateBottling(string memory _timeOfBottling) public  {
-       // require((keccak256(abi.encodePacked((_timeOfBottling))) == keccak256(abi.encodePacked((timeOfBottling)))));
         timeOfBottling = _timeOfBottling;
     } 
     

@@ -33,18 +33,18 @@ contract BottleStore{
     }
 
     //Checkhez
-    function ownersBottles(address _owner) public view returns (Bottle[] memory){
+    function ownersBottles() public view returns (Bottle[] memory){
         uint count=0;
         for (uint i = 0; i < bottles.length; i++) {
-            if (bottles[i].owner == _owner) {
+            if (bottles[i].owner == msg.sender) {
                count++;
             }
         }
 
         Bottle[] memory tempBottles = new Bottle[](count);
+        uint tempCount=0;
         for (uint i = 0; i < bottles.length; i++) {
-            uint tempCount=0;
-            if (bottles[i].owner == _owner) {
+            if (bottles[i].owner == msg.sender) {
                 tempBottles[tempCount]=bottles[i];
                 tempCount++;
             }

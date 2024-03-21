@@ -53,13 +53,7 @@ export const BottleStoreABI = [
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_owner",
-          "type": "address"
-        }
-      ],
+      "inputs": [],
       "name": "ownersBottles",
       "outputs": [
         {

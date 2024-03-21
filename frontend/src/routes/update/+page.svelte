@@ -254,6 +254,8 @@
                             >
                         </div>
                     </form>
+
+                    <Button on:click={() => $gotID = false} class="w-full mt-5" >Másik üveg frissítése</Button>
                 {/if}
             </Card.Content>
 

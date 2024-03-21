@@ -1,8 +1,8 @@
-export const headerArray=["Üveg Azonosító","Szőlő fajta","Napos órák száma","Szüretelés időpontja","Palackozás időpontja"]
-export const factoryContractAdress="0x5FbDB2315678afecb367f032d93F642f64180aa3"
+export const headerArray = ["Üveg Azonosító", "Szőlő fajta", "Napos órák száma", "Szüretelés időpontja", "Palackozás időpontja"]
+export const factoryContractAdress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 export type ContractAdress = typeof factoryContractAdress
-export type ABI=typeof factoryAbi
-export const factoryAbi=[
+export type ABI = typeof factoryAbi
+export const factoryAbi = [
 	{
 		"inputs": [
 			{
@@ -71,17 +71,17 @@ export const factoryAbi=[
 		"inputs": [],
 		"name": "returnLastBottle",
 		"outputs": [
-		  {
-			"internalType": "contract Bottle",
-			"name": "",
-			"type": "address"
-		  }
+			{
+				"internalType": "contract Bottle",
+				"name": "",
+				"type": "address"
+			}
 		],
 		"stateMutability": "view",
 		"type": "function"
 	}
 ]
-export const bottleAbi=[
+export const bottleAbi = [
 	{
 		"inputs": [
 			{

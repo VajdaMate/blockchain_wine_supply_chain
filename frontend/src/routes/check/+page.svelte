@@ -74,7 +74,7 @@
     }
 
     async function listByOwner(){
-        let temp=await BottleStore.ownersBottles(signer.getAddress());
+        let temp=await BottleStore.ownersBottles();
         console.log(temp.length)
         let bottleArray: Bottle[] = [];
         temp.forEach((bottle:Bottle) => {
@@ -136,16 +136,16 @@
     </ColCentered>
 {:else}
     <RowCentered>
-        <div class="flex justify-center items-center mr-20">
+        <div class="flex justify-center items-center">
             <img
-                class="w-3/6 h-3/6 object-contain"
+                class="w-4/6 h-4/6 object-contain"
                 src={BottleImage}
                 alt="Wine Bottle"
             />
         </div>
 
         <Card.Root
-            class="bg-slate-900 w-full sm:w-2/4 md:w-1/2 lg:w-1/3 h-fit"
+            class="bg-slate-900 w-full sm:w-2/4 md:w-1/2 lg:w-1/3 h-fit ml-20 mr-20"
         >
             <Card.Header>
                 <Card.Title class="text-4xl mb-2"
@@ -211,9 +211,9 @@
             </Card.Footer>
         </Card.Root>
 
-        <div class="flex justify-center items-center ml-20">
+        <div class="flex justify-center items-center">
             <img
-                class="w-3/6 h-3/6 object-contain"
+                class="w-4/6 h-4/6 object-contain"
                 src={BottleImage}
                 alt="Wine Bottle"
             />

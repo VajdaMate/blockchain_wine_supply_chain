@@ -1,4 +1,4 @@
-export const headerArray = ["Üveg Azonosító", "Szőlő fajta", "Napos órák száma","Eső miliméterben", "Szüretelés időpontja", "Palackozás időpontja"]
+export const headerArray = ["ID", "Szőlő fajta", "Napos órák száma","Eső miliméterben", "Szüretelés időpontja", "Palackozás időpontja"]
 export const contractAdress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 export type ContractAdress = typeof contractAdress
 export type ABI = typeof BottleStoreABI

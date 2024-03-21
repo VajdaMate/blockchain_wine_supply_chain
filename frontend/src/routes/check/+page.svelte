@@ -136,16 +136,16 @@
     </ColCentered>
 {:else}
     <RowCentered>
-        <div class="flex justify-center items-center">
+        <div class="flex justify-center items-center mr-20">
             <img
-                class="w-4/6 h-4/6 object-contain"
+                class="w-3/6 h-3/6 object-contain"
                 src={BottleImage}
                 alt="Wine Bottle"
             />
         </div>
 
         <Card.Root
-            class="bg-slate-900 w-full sm:w-2/4 md:w-1/2 lg:w-1/3 h-5/6 ml-20 mr-20"
+            class="bg-slate-900 w-full sm:w-2/4 md:w-1/2 lg:w-1/3 h-fit"
         >
             <Card.Header>
                 <Card.Title class="text-4xl mb-2"
@@ -169,24 +169,24 @@
                 
 
 
-                <div class="overflow-y-scroll h-4/5">
-                    <Table.Root class="">
+                <div class="max-h-96 overflow-y-scroll overflow-x-auto">
+                    <Table.Root class="w-fit">
                         <Table.Header>
-                            <Table.Row>
+                            <Table.Row class="w-min">
                                 {#each headerArray as header}
                                     <Table.Cell class="text-center">{header}</Table.Cell>
                                 {/each}
                             </Table.Row>
                         </Table.Header>
-                        <Table.Body>
+                        <Table.Body class="w-fit" >
                             {#each $bottles as bottle}
-                                <Table.Row>
-                                    <Table.Cell>{bottle.bottleId}</Table.Cell>
-                                    <Table.Cell>{bottle.typeOfGrape}</Table.Cell>
-                                    <Table.Cell>{bottle.sunnyHours}</Table.Cell>
-                                    <Table.Cell>{bottle.rainMilimeters}</Table.Cell>
-                                    <Table.Cell>{bottle.timeOfHarvest}</Table.Cell>
-                                    <Table.Cell>{bottle.timeOfBottling}</Table.Cell>
+                                <Table.Row class="text-center">
+                                    <Table.Cell >{bottle.bottleId}</Table.Cell>
+                                    <Table.Cell >{bottle.typeOfGrape}</Table.Cell>
+                                    <Table.Cell >{bottle.sunnyHours}</Table.Cell>
+                                    <Table.Cell >{bottle.rainMilimeters}</Table.Cell>
+                                    <Table.Cell >{bottle.timeOfHarvest}</Table.Cell>
+                                    <Table.Cell >{bottle.timeOfBottling}</Table.Cell>
                                 </Table.Row>
                             {/each}
                         </Table.Body>
@@ -211,9 +211,9 @@
             </Card.Footer>
         </Card.Root>
 
-        <div class="flex justify-center items-center">
+        <div class="flex justify-center items-center ml-20">
             <img
-                class="w-4/6 h-4/6 object-contain"
+                class="w-3/6 h-3/6 object-contain"
                 src={BottleImage}
                 alt="Wine Bottle"
             />

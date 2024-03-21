@@ -8,92 +8,117 @@
 
     import { onMount } from "svelte";
     import { writable } from "svelte/store";
-    import { defaultEvmStores, connected } from "ethers-svelte";
+    import { defaultEvmStores as evm, connected } from "ethers-svelte";
 
     import { ethers } from "ethers";
 
     import {
-        factoryContractAdress,
-        factoryAbi,
-        bottleAbi,
+        contractAdress,
+        BottleStoreABI,
         headerArray,
     } from "$lib/constants";
+
+    class Bottle {
+        bottleId: number;
+        typeOfGrape: string;
+        sunnyHours: number;
+        rainMilimeters: number;
+        timeOfHarvest: string;
+        timeOfBottling: string;
+        constructor(
+            bottleId: number,
+            typeOfGrape: string,
+            sunnyHours: number,
+            rainMilimeters: number,
+            timeOfHarvest: string,
+            timeOfBottling: string,
+        ) {
+            this.bottleId = bottleId;
+            this.typeOfGrape = typeOfGrape;
+            this.sunnyHours = sunnyHours;
+            this.rainMilimeters = rainMilimeters;
+            this.timeOfHarvest = timeOfHarvest;
+            this.timeOfBottling = timeOfBottling;
+        }
+    }
+
+
     import RowCentered from "$lib/RowCentered.svelte";
     import ColCentered from "$lib/ColCentered.svelte";
     import BottleImage from "$lib/assets/Wine BottleSmall.png";
 
-    let bottleID: number;
-    let typeOfGrape: string;
-    let sunnyHours: number;
-    let timeOfHarvest: string;
-    let timeOfBottling: string;
 
+    let bottle:Bottle;
+    let ID: number;
     let infoArray: any;
     let gotID = writable(false);
 
-    let provider;
-    let signer;
-    let factoryContract;
-    let contractAddress;
-    let contract: any;
+    let provider: ethers.BrowserProvider
+    let signer: ethers.JsonRpcSigner
+    let BottleStore: ethers.Contract
 
     async function getID() {
-        provider = new ethers.BrowserProvider((window as any).ethereum);
-        signer = await provider.getSigner();
-        factoryContract = new ethers.Contract(
-            factoryContractAdress,
-            factoryAbi,
-            provider,
+        let temp= await BottleStore.returnBottleByID(ID)
+        bottle = new Bottle(
+            temp.bottleId,
+            temp.typeOfGrape,
+            temp.sunnyHours,
+            temp.rainMilimeters,
+            temp.timeOfHarvest,
+            temp.timeOfBottling,
         );
         
-        contractAddress = await factoryContract.returnBottle(bottleID);
-        contract = new ethers.Contract(contractAddress, bottleAbi, signer);
-
-        bottleID = (await contract.getBottleID()).toString();
-        typeOfGrape = await contract.getTypeOfGrape();
-        sunnyHours = (await contract.getAmountOfSunnyHours()).toString();
-        timeOfHarvest = await contract.getTimeOfHarvest();
-        timeOfBottling = await contract.getTimeOfBottling();
-
         $gotID = true;
         infoArray = writable([
-            bottleID,
-            typeOfGrape,
-            sunnyHours,
-            timeOfHarvest,
-            timeOfBottling,
+            bottle.bottleId,
+            bottle.typeOfGrape,
+            bottle.sunnyHours,
+            bottle.rainMilimeters,
+            bottle.timeOfHarvest,
+            bottle.timeOfBottling,
         ]);
     }
 
     async function sunnyUpdate() {
-        const tx = await contract.updateHours(sunnyHours);
+        const tx = await BottleStore.updateSunnyHours(ID,bottle.sunnyHours);
         const success = await (tx as any).wait();
-
         if (success.status === 1) {
-            $infoArray[2] = sunnyHours;
+            $infoArray[2] = bottle.sunnyHours;
             console.log("Successfully updated!");
         } else {
             console.error("Transaction failed:", success);
         }
     }
 
+    async function rainUpdate() {
+        const tx = await BottleStore.updateRainMilimeters(ID,bottle.rainMilimeters);
+        const success = await (tx as any).wait();
+        if (success.status === 1) {
+            $infoArray[3] = bottle.rainMilimeters;
+            console.log("Successfully updated!");
+        } else {
+            console.error("Transaction failed:", success);
+        }
+        
+    }
+
     async function harvestUpdate() {
-        const tx = await contract.updateHarvest(timeOfHarvest);
+        const tx = await BottleStore.updateTimeOfHarvest(ID,bottle.timeOfHarvest);
 
         const success = await (tx as any).wait();
         if (success.status === 1) {
-            $infoArray[3] = timeOfHarvest;
+            $infoArray[4] = bottle.timeOfHarvest;
             console.log("Successfully updated!");
         } else {
             console.error("Transaction failed:", success);
         }
     }
     async function bottlingUpdate() {
-        const tx = await contract.updateBottling(timeOfBottling);
+        const tx = await BottleStore.updateTimeOfBottling(ID,bottle.timeOfBottling);
 
         const success = await (tx as any).wait();
         if (success.status === 1) {
-            $infoArray[4] = timeOfBottling;
+            $infoArray[5] = bottle.timeOfBottling;
             console.log("Successfully updated!");
         } else {
             console.error("Transaction failed:", success);
@@ -101,10 +126,26 @@
     }
 
     async function connectWallet() {
-        await defaultEvmStores.setProvider();
+        await evm.setProvider();
     }
-    onMount(() => {
-        connectWallet();
+
+    async function connectContract() {
+        provider = new ethers.BrowserProvider((window as any).ethereum);
+        signer = await provider.getSigner();
+        BottleStore = new ethers.Contract(
+            contractAdress,
+            BottleStoreABI,
+            signer,
+        );
+    }
+
+    async function connect(){
+        await connectWallet();
+        await connectContract();
+    }
+
+    onMount(async () => {
+       await connect();
     });
 </script>
 
@@ -149,7 +190,7 @@
                 {#if !$gotID}
                     <form>
                         <Label>Üveg azonosítója</Label>
-                        <Input type="number" bind:value={bottleID} />
+                        <Input type="number" bind:value={ID} />
                         <Button on:click={getID} class="mt-2 w-full"
                             >Üveg lekérése</Button
                         >
@@ -177,8 +218,18 @@
                     <form>
                         <Label>Napsütéses órák száma</Label>
                         <div class="flex">
-                            <Input type="number" bind:value={sunnyHours} />
+                            <Input type="number" bind:value={bottle.sunnyHours} />
                             <Button on:click={sunnyUpdate} class="ml-2"
+                                >Frissítés</Button
+                            >
+                        </div>
+                    </form>
+
+                    <form>
+                        <Label>Eső miliméterben</Label>
+                        <div class="flex">
+                            <Input type="number" bind:value={bottle.rainMilimeters} />
+                            <Button on:click={rainUpdate} class="ml-2"
                                 >Frissítés</Button
                             >
                         </div>
@@ -187,7 +238,7 @@
                     <form>
                         <Label>Szüretelés időpontja órák száma</Label>
                         <div class="flex">
-                            <Input type="string" bind:value={timeOfHarvest} />
+                            <Input type="string" bind:value={bottle.timeOfHarvest} />
                             <Button on:click={harvestUpdate} class="ml-2"
                                 >Frissítés</Button
                             >
@@ -197,7 +248,7 @@
                     <form>
                         <Label>Palackozás időpontja</Label>
                         <div class="flex">
-                            <Input type="string" bind:value={timeOfBottling} />
+                            <Input type="string" bind:value={bottle.timeOfBottling} />
                             <Button on:click={bottlingUpdate} class="ml-2"
                                 >Frissítés</Button
                             >

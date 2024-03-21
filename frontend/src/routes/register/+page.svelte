@@ -11,9 +11,8 @@
     import { ethers } from "ethers";
 
     import {
-        factoryContractAdress,
-        factoryAbi,
-        bottleAbi,
+        contractAdress,
+        BottleStoreABI
     } from "$lib/constants";
 
     import RowCentered from "$lib/RowCentered.svelte";
@@ -24,28 +23,18 @@
 
     let typeOfGrape: string;
     let bottleID: number;
-    let contractAdress: any;
+
+    let provider: ethers.BrowserProvider
+    let signer: ethers.JsonRpcSigner
+    let BottleStore: ethers.Contract
 
     async function submitForm() {
         contractRegistered = false;
-        const provider = new ethers.BrowserProvider((window as any).ethereum);
-        const signer = await provider.getSigner();
-        const factoryContract = new ethers.Contract(
-            factoryContractAdress,
-            factoryAbi,
-            signer,
-        );
-
-        const tx = await factoryContract.createBottle(typeOfGrape);
+       
+        const tx = await BottleStore.registerBottle(typeOfGrape);
         const receipt = await (tx as any).wait();
         if (receipt.status === 1) {
-            contractAdress = await factoryContract.returnLastBottle();
-            let contract = new ethers.Contract(
-                contractAdress,
-                bottleAbi,
-                signer,
-            );
-            bottleID = await contract.getBottleID();
+            bottleID = await BottleStore.returnLastBottleID();
             contractRegistered = true;
             console.log("Transaction successful!");
         } else {
@@ -57,10 +46,27 @@
         await evm.setProvider();
     }
 
+    async function connectContract() {
+        provider = new ethers.BrowserProvider((window as any).ethereum);
+        signer = await provider.getSigner();
+        BottleStore = new ethers.Contract(
+            contractAdress,
+            BottleStoreABI,
+            signer,
+        );
+    }
+
+    async function connect(){
+        await connectWallet();
+        await connectContract();
+    }
+
     onMount(async () => {
-        connectWallet();
+       await connect();
     });
+
 </script>
+
 
 {#if !$connected}
     <ColCentered>
@@ -123,6 +129,7 @@
                         </Alert.Root>
                     </div>
                 {/if}
+
             </Card.Content>
 
             <Card.Footer class="block">
@@ -148,5 +155,6 @@
                 alt="Wine Bottle"
             />
         </div>
+        
     </RowCentered>
 {/if}

@@ -10,6 +10,14 @@ module.exports = {
       chainId: 31337,
     },
   },
+  gasReporter: {
+      enabled: true,
+      currency: "USD",
+      outputFile: "gas-report.txt",
+      noColors: true,
+      coinmarketcap:"045207fe-00f8-4495-89e8-faa061578c2d",
+  },
+
   solidity: "0.8.24",
   paths: {
     artifacts: "./artifacts",

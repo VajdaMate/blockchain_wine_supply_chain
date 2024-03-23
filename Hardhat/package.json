@@ -8,10 +8,13 @@
     "@typechain/ethers-v6": "^0.5.0",
     "@typechain/hardhat": "^9.0.0",
     "chai": "^4.2.0",
-    "ethers": "^6.4.0",
+    "ethers": "^6.11.1",
     "hardhat": "^2.22.1",
-    "hardhat-gas-reporter": "^1.0.8",
+    "hardhat-gas-reporter": "^2.0.2",
     "solidity-coverage": "^0.8.0",
     "typechain": "^8.3.0"
+  },
+  "dependencies": {
+    "ethereum-waffle": "^4.0.10"
   }
 }

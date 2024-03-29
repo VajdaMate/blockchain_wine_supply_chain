@@ -4,6 +4,8 @@
     import * as Alert from "$lib/components/ui/alert";
     import { Label } from "$lib/components/ui/label";
     import { Input } from "$lib/components/ui/input";
+    import * as Dialog from "$lib/components/ui/dialog";
+
 
     import { onMount } from "svelte";
 
@@ -21,12 +23,14 @@
 
     let contractRegistered = false;
 
-    let typeOfGrape: string;
+    let typeOfGrape: string="";
     let bottleID: number;
 
     let provider: ethers.BrowserProvider
     let signer: ethers.JsonRpcSigner
     let BottleStore: ethers.Contract
+
+    let dialogOpen = false;
 
     async function submitForm() {
         contractRegistered = false;
@@ -40,6 +44,8 @@
         } else {
             console.error("Transaction failed:", receipt);
         }
+        dialogOpen = false;
+        typeOfGrape = "";
     }
 
     async function connectWallet() {
@@ -106,12 +112,40 @@
             </Card.Header>
 
             <Card.Content>
+                                
+                
+
                 <form>
                     <Label>Szőlő fajtája</Label>
                     <Input type="string" bind:value={typeOfGrape} />
-                    <Button on:click={submitForm} class="mt-2 w-full"
-                        >Regisztráció</Button
-                    >
+                    
+                    <Dialog.Root bind:open={dialogOpen}>
+                        <Dialog.Trigger class="mt-2 p-1 w-full text-slate-800 font-medium text-lg bg-white rounded-sm" >Frissítés</Dialog.Trigger>
+                        <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
+                            
+                            {#if typeOfGrape == ""}
+                                <div class="mt-2 mb-2 text-3xl text-center">Nem adott meg szőlőfajtát!</div>
+                            {:else}
+
+                            <Dialog.Header class="mt-4 mb-3">
+                                
+                                <Dialog.Title class="text-3xl">Biztosan ezzel a szőlőfajtával szeretnéd regisztrálni az üveget?
+                                    <div class="mt-2 mb-2 text-2xl text-red-700"> Szőlőfajta: {typeOfGrape}</div>
+                                </Dialog.Title>
+                                
+                                <Dialog.Description class="text-lg">
+                                    Ez a művelet visszafordíthatatlan, és költségekkel jár!
+                                </Dialog.Description>
+    
+                                <Button on:click={submitForm} class="mt-2 w-full">Regisztráció</Button>
+
+                            </Dialog.Header>
+                            
+                            {/if}
+
+                        </Dialog.Content>
+                    </Dialog.Root>
+                    
                 </form>
 
                 {#if contractRegistered}
@@ -122,9 +156,9 @@
                             >
                             <Alert.Description class="text-1xl text-slate-400">
                                 Az üveg sikeresen rögzítésre került a
-                                blokkláncon
+                                blokkláncon!
                                 <div>Az alábbi azonosítóval: {bottleID}</div>
-                                <div>Az alábbi címen: {contractAdress}</div>
+                                <div>Az alábbi címen lévő okosszerződés elemeként: {contractAdress}</div>
                             </Alert.Description>
                         </Alert.Root>
                     </div>

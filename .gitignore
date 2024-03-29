@@ -266,3 +266,6 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/node,windows,visualstudiocode,solidity,svelte
+/Hardhat/artifacts
+/Hardhat/cache
+/Hardhat/gas-report.txt

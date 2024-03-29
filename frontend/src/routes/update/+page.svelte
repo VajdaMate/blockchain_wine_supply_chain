@@ -10,6 +10,7 @@
     import { onMount } from "svelte";
     import { writable, type Writable } from "svelte/store";
     import { defaultEvmStores as evm, connected } from "ethers-svelte";
+    import moment from "moment";
 
     import { ethers } from "ethers";
 
@@ -64,6 +65,14 @@
     let rainDialogOpen:boolean = false;
     let harvestDialogOpen:boolean = false;
     let bottlingDialogOpen:boolean = false;
+
+    const dateFormats: string[] = 
+    ["YYYY.MM.DD",
+     "YYYY/MM/DD",
+     "YYYY-MM-DD",
+     "DD/MM/YYYY",
+     "DD-MM-YYYY",
+     "DD.MM.YYYY"];  
 
     async function getID() {
         let temp= await BottleStore.returnBottleByID(ID)
@@ -188,7 +197,7 @@
             />
         </div>
         <Card.Root
-            class="bg-slate-900 w-full sm:w-2/4 md:w-1/2 lg:w-1/3 h-5/6 ml-20 mr-20"
+            class="bg-slate-900 w-full w-min-fit sm:w-2/4 md:w-1/2 lg:w-1/3 h-5/6 ml-20 mr-20" 
         >
             <Card.Header class="">
                 <Card.Title class="text-4xl mb"
@@ -242,17 +251,28 @@
                                 {:else}
         
                                 <Dialog.Header class="mt-4 mb-3">
-                                    
-                                    <Dialog.Title class="text-3xl">Biztosan ennyi napsütéses órával szeretnéd frissíteni az üveget?
+                                        {#if (bottle.sunnyHours < 1000 )}
+                                            <div class="text-5xl text-center text-red-700">Túl kevés napos óra! </div>  
+
+                                        {:else if (bottle.sunnyHours > 5000 )}
+                                            <div class="text-5xl text-center text-red-700">Túl sok napos óra! </div>  
+                                        
+                                        {:else}
+                                        
+                                        <Dialog.Title class="text-3xl">
+                                            Biztosan ennyi napsütéses órával szeretnéd frissíteni az üveget?
+                                        </Dialog.Title>
+                                        
                                         <div class="mt-2 mb-2 text-2xl text-destructive"> Napsütéses órák száma: {bottle.sunnyHours}</div>
-                                    </Dialog.Title>
-                                    
-                                    <Dialog.Description class="text-lg">
-                                        Ez a művelet visszafordíthatatlan, csak egyszer frissíthető és költségekkel jár!
-                                    </Dialog.Description>
+                                        
+                                        <Dialog.Description class="text-lg">
+                                            Ez a művelet visszafordíthatatlan, csak egyszer frissíthető és költségekkel jár!
+                                        </Dialog.Description>
+
+                                        <Button on:click={sunnyUpdate} class="mt-2 w-full">Frissítés</Button>
         
-                                    <Button on:click={sunnyUpdate} class="mt-2 w-full">Frissítés</Button>
-        
+                                        {/if}
+                                        
                                 </Dialog.Header>
                                 
                                 {/if}
@@ -276,6 +296,14 @@
         
                                 <Dialog.Header class="mt-4 mb-3">
                                     
+                                    {#if (bottle.rainMilimeters < 100 )}
+                                    <div class="text-5xl text-center text-red-700">Túl kevés eső!</div>  
+
+                                    {:else if (bottle.sunnyHours > 1500 )}
+                                        <div class="text-5xl text-center text-red-700">Túl sok eső!</div>  
+                                    
+                                    {:else}
+
                                     <Dialog.Title class="text-3xl">Biztosan ezzel az eső mennyiséggel szeretnéd frissíteni az üveget?
                                         <div class="mt-2 mb-2 text-2xl text-destructive"> Eső mennyisége: {bottle.rainMilimeters} mm</div>
                                     </Dialog.Title>
@@ -285,7 +313,8 @@
                                     </Dialog.Description>
         
                                     <Button on:click={rainUpdate} class="mt-2 w-full">Frissítés</Button>
-        
+                                    {/if}
+                                
                                 </Dialog.Header>
                                 
                                 {/if}
@@ -308,7 +337,15 @@
                                 {:else}
         
                                 <Dialog.Header class="mt-4 mb-3">
-                                    
+                                    {#if (  !moment(bottle.timeOfHarvest,dateFormats).isValid() 
+                                            || 
+                                            moment(bottle.timeOfHarvest,dateFormats).isAfter(moment())
+                                            ||
+                                            moment(bottle.timeOfHarvest,dateFormats).isBefore(moment().subtract(1, 'month')
+                                    ))}
+
+                                        <div class="mt-2 mb-2 text-3xl text-center">Nem megfelelő dátum!</div>
+                                    {:else}
                                     <Dialog.Title class="text-3xl">Biztosan ezzel a szüretelési dátummal szeretnéd frissíteni az üveget?
                                         <div class="mt-2 mb-2 text-2xl text-destructive"> Szüret dátuma: {bottle.timeOfHarvest}</div>
                                     </Dialog.Title>
@@ -319,6 +356,8 @@
         
                                     <Button on:click={harvestUpdate} class="mt-2 w-full">Frissítés</Button>
         
+
+                                    {/if}
                                 </Dialog.Header>
                                 
                                 {/if}
@@ -341,17 +380,31 @@
                                 {:else}
         
                                 <Dialog.Header class="mt-4 mb-3">
+                                    {#if (  
+                                        bottle.timeOfHarvest=="Még nem szüretelt"
+                                        ||
+                                        !moment(bottle.timeOfBottling,dateFormats).isValid() 
+                                        || 
+                                        moment(bottle.timeOfBottling,dateFormats).isAfter(moment())
+                                        ||
+                                        moment(bottle.timeOfBottling,dateFormats).isBefore(moment().subtract(1, 'month')
+                                        ||
+                                        moment(bottle.timeOfBottling,dateFormats).isBefore(moment(bottle.timeOfHarvest,dateFormats)) 
+                                    ))}
+
+                                        <div class="mt-2 mb-2 text-3xl text-center">Nem megfelelő dátum!</div>
                                     
-                                    <Dialog.Title class="text-3xl">Biztosan ezzel a palackozási dátummal szeretnéd frissíteni az üveget?
-                                        <div class="mt-2 mb-2 text-2xl text-destructive"> Palackozás dátuma: {bottle.timeOfBottling}</div>
-                                    </Dialog.Title>
-                                    
-                                    <Dialog.Description class="text-lg">
-                                        Ez a művelet visszafordíthatatlan, csak egyszer frissíthető, és költségekkel jár!
-                                    </Dialog.Description>
-        
-                                    <Button on:click={bottlingUpdate} class="mt-2 w-full">Frissítés</Button>
-        
+                                    {:else}
+                                        <Dialog.Title class="text-3xl">Biztosan ezzel a palackozási dátummal szeretnéd frissíteni az üveget?
+                                            <div class="mt-2 mb-2 text-2xl text-destructive"> Palackozás dátuma: {bottle.timeOfBottling}</div>
+                                        </Dialog.Title>
+                                        
+                                        <Dialog.Description class="text-lg">
+                                            Ez a művelet visszafordíthatatlan, csak egyszer frissíthető, és költségekkel jár!
+                                        </Dialog.Description>
+            
+                                        <Button on:click={bottlingUpdate} class="mt-2 w-full">Frissítés</Button>
+                                    {/if}
                                 </Dialog.Header>
                                 
                                 {/if}

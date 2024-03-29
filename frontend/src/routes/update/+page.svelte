@@ -236,7 +236,7 @@
                     </form>
 
                     <form>
-                        <Label>Szüretelés időpontja órák száma</Label>
+                        <Label>Szüretelés időpontja</Label>
                         <div class="flex">
                             <Input type="string" bind:value={bottle.timeOfHarvest} />
                             <Button on:click={harvestUpdate} class="ml-2"

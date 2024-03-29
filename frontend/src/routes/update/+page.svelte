@@ -5,6 +5,7 @@
     import * as Table from "$lib/components/ui/table";
     import { Input } from "$lib/components/ui/input";
     import Label from "$lib/components/ui/label/label.svelte";
+    import * as Dialog from "$lib/components/ui/dialog";
 
     import { onMount } from "svelte";
     import { writable, type Writable } from "svelte/store";
@@ -58,6 +59,12 @@
     let signer: ethers.JsonRpcSigner
     let BottleStore: ethers.Contract
 
+
+    let sunnyDialogOpen:boolean = false;
+    let rainDialogOpen:boolean = false;
+    let harvestDialogOpen:boolean = false;
+    let bottlingDialogOpen:boolean = false;
+
     async function getID() {
         let temp= await BottleStore.returnBottleByID(ID)
         bottle = new Bottle(
@@ -91,6 +98,7 @@
         } else {
             console.error("Transaction failed:", success);
         }
+        sunnyDialogOpen = false;
     }
 
     async function rainUpdate() {
@@ -102,6 +110,7 @@
         } else {
             console.error("Transaction failed:", success);
         }
+        rainDialogOpen = false;
         
     }
 
@@ -115,6 +124,7 @@
         } else {
             console.error("Transaction failed:", success);
         }
+        harvestDialogOpen = false;
     }
     async function bottlingUpdate() {
         const tx = await BottleStore.updateTimeOfBottling(ID,bottle.timeOfBottling);
@@ -126,6 +136,7 @@
         } else {
             console.error("Transaction failed:", success);
         }
+        bottlingDialogOpen = false;
     }
 
     async function connectWallet() {
@@ -221,9 +232,33 @@
                     <Label>Napsütéses órák száma</Label>
                     <div class="flex">
                         <Input type="number" bind:value={bottle.sunnyHours} />
-                        <Button on:click={sunnyUpdate} class="ml-2"
-                            >Frissítés</Button
-                        >
+                        
+                        <Dialog.Root bind:open={sunnyDialogOpen}>
+                            <Dialog.Trigger class="ml-1 px-3 text-slate-800 font-semibold text-base bg-white rounded-md" >Frissítés</Dialog.Trigger>
+                            <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
+                                
+                                {#if bottle.sunnyHours == 0}
+                                    <div class="mt-2 mb-2 text-3xl text-center">Adja meg a napsütéses órák számát!</div>
+                                {:else}
+        
+                                <Dialog.Header class="mt-4 mb-3">
+                                    
+                                    <Dialog.Title class="text-3xl">Biztosan ennyi napsütéses órával szeretnéd frissíteni az üveget?
+                                        <div class="mt-2 mb-2 text-2xl text-destructive"> Napsütéses órák száma: {bottle.sunnyHours}</div>
+                                    </Dialog.Title>
+                                    
+                                    <Dialog.Description class="text-lg">
+                                        Ez a művelet visszafordíthatatlan, csak egyszer frissíthető és költségekkel jár!
+                                    </Dialog.Description>
+        
+                                    <Button on:click={sunnyUpdate} class="mt-2 w-full">Frissítés</Button>
+        
+                                </Dialog.Header>
+                                
+                                {/if}
+        
+                            </Dialog.Content>
+                        </Dialog.Root> 
                     </div>
                 
 
@@ -231,9 +266,32 @@
                     <Label>Eső miliméterben</Label>
                     <div class="flex">
                         <Input type="number" bind:value={bottle.rainMilimeters} />
-                        <Button on:click={rainUpdate} class="ml-2"
-                            >Frissítés</Button
-                        >
+                        <Dialog.Root bind:open={rainDialogOpen}>
+                            <Dialog.Trigger class="ml-1 px-3 text-slate-800 font-semibold text-base bg-white rounded-md" >Frissítés</Dialog.Trigger>
+                            <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
+                                
+                                {#if bottle.rainMilimeters == 0}
+                                    <div class="mt-2 mb-2 text-3xl text-center">Adja meg az eső mennyiségét!</div>
+                                {:else}
+        
+                                <Dialog.Header class="mt-4 mb-3">
+                                    
+                                    <Dialog.Title class="text-3xl">Biztosan ezzel az eső mennyiséggel szeretnéd frissíteni az üveget?
+                                        <div class="mt-2 mb-2 text-2xl text-destructive"> Eső mennyisége: {bottle.rainMilimeters} mm</div>
+                                    </Dialog.Title>
+                                    
+                                    <Dialog.Description class="text-lg">
+                                        Ez a művelet visszafordíthatatlan, csak egyszer frissíthető és költségekkel jár!
+                                    </Dialog.Description>
+        
+                                    <Button on:click={rainUpdate} class="mt-2 w-full">Frissítés</Button>
+        
+                                </Dialog.Header>
+                                
+                                {/if}
+        
+                            </Dialog.Content>
+                        </Dialog.Root> 
                     </div>
                 
 
@@ -241,18 +299,65 @@
                     <Label>Szüretelés időpontja</Label>
                     <div class="flex">
                         <Input type="string" bind:value={bottle.timeOfHarvest} />
-                        <Button on:click={harvestUpdate} class="ml-2"
-                            >Frissítés</Button
-                        >
+                        <Dialog.Root bind:open={harvestDialogOpen}>
+                            <Dialog.Trigger class="ml-1 px-3 text-slate-800 font-semibold text-base bg-white rounded-md" >Frissítés</Dialog.Trigger>
+                            <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
+                                
+                                {#if bottle.timeOfHarvest == "Még nem szüretelt"}
+                                    <div class="mt-2 mb-2 text-3xl text-center">Adja meg a szüretelés időpontját!</div>
+                                {:else}
+        
+                                <Dialog.Header class="mt-4 mb-3">
+                                    
+                                    <Dialog.Title class="text-3xl">Biztosan ezzel a szüretelési dátummal szeretnéd frissíteni az üveget?
+                                        <div class="mt-2 mb-2 text-2xl text-destructive"> Szüret dátuma: {bottle.timeOfHarvest}</div>
+                                    </Dialog.Title>
+                                    
+                                    <Dialog.Description class="text-lg">
+                                        Ez a művelet visszafordíthatatlan, csak egyszer frissíthető, és költségekkel jár!
+                                    </Dialog.Description>
+        
+                                    <Button on:click={harvestUpdate} class="mt-2 w-full">Frissítés</Button>
+        
+                                </Dialog.Header>
+                                
+                                {/if}
+        
+                            </Dialog.Content>
+                        </Dialog.Root> 
                     </div>
                 
                 
                     <Label>Palackozás időpontja</Label>
                     <div class="flex">
                         <Input type="string" bind:value={bottle.timeOfBottling} />
-                        <Button on:click={bottlingUpdate} class="ml-2"
-                            >Frissítés</Button
-                        >
+                        
+                        <Dialog.Root bind:open={bottlingDialogOpen}>
+                            <Dialog.Trigger class="ml-1 px-3 text-slate-800 font-semibold text-base bg-white rounded-md" >Frissítés</Dialog.Trigger>
+                            <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
+                                
+                                {#if bottle.timeOfBottling == "Még nem palackozott"}
+                                    <div class="mt-2 mb-2 text-3xl text-center">Adja meg a palackozás időpontját!</div>
+                                {:else}
+        
+                                <Dialog.Header class="mt-4 mb-3">
+                                    
+                                    <Dialog.Title class="text-3xl">Biztosan ezzel a palackozási dátummal szeretnéd frissíteni az üveget?
+                                        <div class="mt-2 mb-2 text-2xl text-destructive"> Palackozás dátuma: {bottle.timeOfBottling}</div>
+                                    </Dialog.Title>
+                                    
+                                    <Dialog.Description class="text-lg">
+                                        Ez a művelet visszafordíthatatlan, csak egyszer frissíthető, és költségekkel jár!
+                                    </Dialog.Description>
+        
+                                    <Button on:click={bottlingUpdate} class="mt-2 w-full">Frissítés</Button>
+        
+                                </Dialog.Header>
+                                
+                                {/if}
+        
+                            </Dialog.Content>
+                        </Dialog.Root> 
                     </div>
                 
 

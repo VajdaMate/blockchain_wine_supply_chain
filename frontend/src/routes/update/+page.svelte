@@ -49,6 +49,7 @@
     import RowCentered from "$lib/RowCentered.svelte";
     import ColCentered from "$lib/ColCentered.svelte";
     import BottleImage from "$lib/assets/Wine BottleSmall.png";
+    import { Description } from "formsnap";
 
 
     let bottle:Bottle;
@@ -243,7 +244,7 @@
                             </Table.Row>
                         </Table.Header>
                         <Table.Body>
-                            <Table.Row>
+                            <Table.Row class="text-center">
                                 {#each $infoArray as info}
                                     <Table.Cell>{info}</Table.Cell>
                                 {/each}
@@ -385,10 +386,10 @@
                                         || 
                                         moment(bottle.timeOfBottling,dateFormats).isAfter(moment())
                                         ||
-                                        moment(bottle.timeOfBottling,dateFormats).isBefore(moment().subtract(1, 'month')
+                                        moment(bottle.timeOfBottling,dateFormats).isBefore(moment().subtract(1, 'month'))
                                         ||
                                         moment(bottle.timeOfBottling,dateFormats).isBefore(moment(bottle.timeOfHarvest,dateFormats)) 
-                                    ))}
+                                    )};
 
                                         <div class="mt-2 mb-2 text-3xl text-center">Nem megfelelő dátum!</div>
                                     
@@ -407,6 +408,16 @@
                         </Dialog.Root> 
                     </div>
 
+                    {/if}
+
+                    {#if $infoArray[2] != 0 && $infoArray[3] != 0 && $infoArray[4] != "Még nem szüretelt" && $infoArray[5] != "Még nem palackozott"}
+                        <Alert.Root class="w-full h-1/2 mt-5">
+                            <Alert.Title class="text-2xl text-slate-200">Nem lehetséges az üveg további frissítése!</Alert.Title>
+                            
+                            <Alert.Description class="text-slate-400">
+                                Az üveg minden adatát egyszer lehetséges frissíteni, hogy ne lehessen manipulálni, vagy felülírni a már rögzített adatokat.
+                            </Alert.Description>
+                        </Alert.Root>
                     {/if}
 
                     <Button on:click={() => $gotID = false} class="w-full mt-5" >Másik üveg frissítése</Button>

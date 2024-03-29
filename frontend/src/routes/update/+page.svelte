@@ -389,7 +389,7 @@
                                         moment(bottle.timeOfBottling,dateFormats).isBefore(moment().subtract(1, 'month'))
                                         ||
                                         moment(bottle.timeOfBottling,dateFormats).isBefore(moment(bottle.timeOfHarvest,dateFormats)) 
-                                    )};
+                                    )}
 
                                         <div class="mt-2 mb-2 text-3xl text-center">Nem megfelelő dátum!</div>
                                     

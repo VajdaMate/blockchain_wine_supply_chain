@@ -21,7 +21,7 @@
     import ColCentered from "$lib/ColCentered.svelte";
     import BottleImage from "$lib/assets/Wine BottleSmall.png";
 
-    let contractRegistered = false;
+    let contractRegistered:boolean = false;
 
     let typeOfGrape: string="";
     let bottleID: number;
@@ -113,40 +113,38 @@
 
             <Card.Content>
                                 
+            
+                <Label>Szőlő fajtája</Label>
+                <Input type="string" bind:value={typeOfGrape} />
                 
+                <Dialog.Root bind:open={dialogOpen}>
+                    <Dialog.Trigger class="mt-2 p-1 w-full text-slate-800 font-medium text-lg bg-white rounded-sm" >Frissítés</Dialog.Trigger>
+                    <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
+                        
+                        {#if typeOfGrape == ""}
+                            <div class="mt-2 mb-2 text-3xl text-center">Nem adott meg szőlőfajtát!</div>
+                        {:else}
 
-                <form>
-                    <Label>Szőlő fajtája</Label>
-                    <Input type="string" bind:value={typeOfGrape} />
-                    
-                    <Dialog.Root bind:open={dialogOpen}>
-                        <Dialog.Trigger class="mt-2 p-1 w-full text-slate-800 font-medium text-lg bg-white rounded-sm" >Frissítés</Dialog.Trigger>
-                        <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
+                        <Dialog.Header class="mt-4 mb-3">
                             
-                            {#if typeOfGrape == ""}
-                                <div class="mt-2 mb-2 text-3xl text-center">Nem adott meg szőlőfajtát!</div>
-                            {:else}
-
-                            <Dialog.Header class="mt-4 mb-3">
-                                
-                                <Dialog.Title class="text-3xl">Biztosan ezzel a szőlőfajtával szeretnéd regisztrálni az üveget?
-                                    <div class="mt-2 mb-2 text-2xl text-red-700"> Szőlőfajta: {typeOfGrape}</div>
-                                </Dialog.Title>
-                                
-                                <Dialog.Description class="text-lg">
-                                    Ez a művelet visszafordíthatatlan, és költségekkel jár!
-                                </Dialog.Description>
-    
-                                <Button on:click={submitForm} class="mt-2 w-full">Regisztráció</Button>
-
-                            </Dialog.Header>
+                            <Dialog.Title class="text-3xl">Biztosan ezzel a szőlőfajtával szeretnéd regisztrálni az üveget?
+                                <div class="mt-2 mb-2 text-2xl text-red-700"> Szőlőfajta: {typeOfGrape}</div>
+                            </Dialog.Title>
                             
-                            {/if}
+                            <Dialog.Description class="text-lg">
+                                Ez a művelet visszafordíthatatlan, és költségekkel jár!
+                            </Dialog.Description>
 
-                        </Dialog.Content>
-                    </Dialog.Root>
+                            <Button on:click={submitForm} class="mt-2 w-full">Regisztráció</Button>
+
+                        </Dialog.Header>
+                        
+                        {/if}
+
+                    </Dialog.Content>
+                </Dialog.Root>
                     
-                </form>
+                
 
                 {#if contractRegistered}
                     <div class="flex justify-center items-center">

@@ -7,7 +7,7 @@
     import Label from "$lib/components/ui/label/label.svelte";
 
     import { onMount } from "svelte";
-    import { writable } from "svelte/store";
+    import { writable, type Writable } from "svelte/store";
     import { defaultEvmStores as evm, connected } from "ethers-svelte";
 
     import { ethers } from "ethers";
@@ -25,6 +25,7 @@
         rainMilimeters: number;
         timeOfHarvest: string;
         timeOfBottling: string;
+        
         constructor(
             bottleId: number,
             typeOfGrape: string,
@@ -50,7 +51,7 @@
 
     let bottle:Bottle;
     let ID: number;
-    let infoArray: any;
+    let infoArray: Writable<any[]> = writable([]);
     let gotID = writable(false);
 
     let provider: ethers.BrowserProvider
@@ -69,13 +70,15 @@
         );
         
         $gotID = true;
-        infoArray = writable([
+
+        infoArray.set([
             bottle.bottleId,
             bottle.typeOfGrape,
             bottle.sunnyHours,
             bottle.rainMilimeters,
             bottle.timeOfHarvest,
             bottle.timeOfBottling,
+        
         ]);
     }
 
@@ -188,13 +191,12 @@
 
             <Card.Content>
                 {#if !$gotID}
-                    <form>
-                        <Label>Üveg azonosítója</Label>
-                        <Input type="number" bind:value={ID} />
-                        <Button on:click={getID} class="mt-2 w-full"
-                            >Üveg lekérése</Button
-                        >
-                    </form>
+                    
+                    <Label>Üveg azonosítója</Label>
+                    <Input type="number" bind:value={ID} />
+                    <Button on:click={getID} class="mt-2 w-full"
+                        >Üveg lekérése</Button
+                    >
                 {:else}
                     <Table.Root>
                         <Table.Header>
@@ -215,45 +217,44 @@
                         </Table.Body>
                     </Table.Root>
 
-                    <form>
-                        <Label>Napsütéses órák száma</Label>
-                        <div class="flex">
-                            <Input type="number" bind:value={bottle.sunnyHours} />
-                            <Button on:click={sunnyUpdate} class="ml-2"
-                                >Frissítés</Button
-                            >
-                        </div>
-                    </form>
+                  
+                    <Label>Napsütéses órák száma</Label>
+                    <div class="flex">
+                        <Input type="number" bind:value={bottle.sunnyHours} />
+                        <Button on:click={sunnyUpdate} class="ml-2"
+                            >Frissítés</Button
+                        >
+                    </div>
+                
 
-                    <form>
-                        <Label>Eső miliméterben</Label>
-                        <div class="flex">
-                            <Input type="number" bind:value={bottle.rainMilimeters} />
-                            <Button on:click={rainUpdate} class="ml-2"
-                                >Frissítés</Button
-                            >
-                        </div>
-                    </form>
+                    
+                    <Label>Eső miliméterben</Label>
+                    <div class="flex">
+                        <Input type="number" bind:value={bottle.rainMilimeters} />
+                        <Button on:click={rainUpdate} class="ml-2"
+                            >Frissítés</Button
+                        >
+                    </div>
+                
 
-                    <form>
-                        <Label>Szüretelés időpontja</Label>
-                        <div class="flex">
-                            <Input type="string" bind:value={bottle.timeOfHarvest} />
-                            <Button on:click={harvestUpdate} class="ml-2"
-                                >Frissítés</Button
-                            >
-                        </div>
-                    </form>
-
-                    <form>
-                        <Label>Palackozás időpontja</Label>
-                        <div class="flex">
-                            <Input type="string" bind:value={bottle.timeOfBottling} />
-                            <Button on:click={bottlingUpdate} class="ml-2"
-                                >Frissítés</Button
-                            >
-                        </div>
-                    </form>
+                
+                    <Label>Szüretelés időpontja</Label>
+                    <div class="flex">
+                        <Input type="string" bind:value={bottle.timeOfHarvest} />
+                        <Button on:click={harvestUpdate} class="ml-2"
+                            >Frissítés</Button
+                        >
+                    </div>
+                
+                
+                    <Label>Palackozás időpontja</Label>
+                    <div class="flex">
+                        <Input type="string" bind:value={bottle.timeOfBottling} />
+                        <Button on:click={bottlingUpdate} class="ml-2"
+                            >Frissítés</Button
+                        >
+                    </div>
+                
 
                     <Button on:click={() => $gotID = false} class="w-full mt-5" >Másik üveg frissítése</Button>
                 {/if}
@@ -261,7 +262,7 @@
 
             <Card.Footer class="block">
                 <div class="text-xl text-center text-slate-400">
-                    Új üveget szeretnék registrálni, vagy ellenőrizni?
+                    Új üveget szeretnék regisztrálni, vagy ellenőrizni?
                     Ellenőrizd, vagy frissítsd:
                 </div>
 

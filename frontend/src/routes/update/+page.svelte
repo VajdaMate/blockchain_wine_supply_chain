@@ -207,7 +207,7 @@
             />
         </div>
         <Card.Root
-            class="bg-slate-900 w-full w-min-fit sm:w-2/4 md:w-1/2 lg:w-1/3 h-5/6 ml-20 mr-20" 
+            class="bg-slate-900 w-full h-fit w-min-fit sm:w-2/4 md:w-1/2 lg:w-1/3 ml-20 mr-20" 
         >
             <Card.Header class="">
                 <Card.Title class="text-4xl mb"

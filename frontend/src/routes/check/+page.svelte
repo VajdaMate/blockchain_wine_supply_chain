@@ -48,34 +48,54 @@
 
     let ID: number;
     const bottles: Writable<Bottle[]> = writable([]);
+    let noSuchID: boolean = false;
+    let noBottles: boolean = false;
 
     let provider: ethers.BrowserProvider
     let signer: ethers.JsonRpcSigner
     let BottleStore: ethers.Contract
 
     async function listByID() {
-        let temp = await BottleStore.returnBottleByID(ID);
-        let bottle = new Bottle(
-            temp.bottleId,
-            temp.typeOfGrape,
-            temp.sunnyHours,
-            temp.rainMilimeters,
-            temp.timeOfHarvest,
-            temp.timeOfBottling,
-        );
+        try {
+            let temp = await BottleStore.returnBottleByID(ID);
+            let bottle = new Bottle(
+                temp.bottleId,
+                temp.typeOfGrape,
+                temp.sunnyHours,
+                temp.rainMilimeters,
+                temp.timeOfHarvest,
+                temp.timeOfBottling,
+            );
 
-        bottles.update((currentBottles) => {
-            if (currentBottles.some((b) => b.bottleId === bottle.bottleId)) {
-                return currentBottles;
-            } else {
-                return [...currentBottles, bottle];
+            bottles.update((currentBottles) => {
+                if (currentBottles.some((b) => b.bottleId === bottle.bottleId)) {
+                    return currentBottles;
+                } else {
+                    return [...currentBottles, bottle];
+                }
+
+            });
+            noSuchID=false;
+            noBottles=false
+        } catch (error:any) {
+            if (error.reason=="Panic due to ARRAY_RANGE_ERROR(50)"){
+                noSuchID=true;
             }
-        });
+
+
+        }
     }
 
     async function listByOwner(){
+        try{
         let temp=await BottleStore.ownersBottles();
         console.log(temp.length)
+        if (temp.length==0){
+            noBottles=true;
+        }
+        else{
+            noBottles=false;
+        }
         let bottleArray: Bottle[] = [];
         temp.forEach((bottle:Bottle) => {
             console.log(bottle)
@@ -90,6 +110,10 @@
             bottleArray.push(tempBottle);
         });
         bottles.set(bottleArray);
+        
+        }catch(error:any){
+            console.log(error)
+        }   
 
     }
 
@@ -166,9 +190,16 @@
                     <Button on:click={listByID} class="mt-2 w-full">Üveg lekérése megadott azonosítóval</Button>
                     <Button on:click={listByOwner} class="mt-2 w-full">Saját címmel regisztrált üvegek lekérése</Button>
                 </form>
+                {#if noSuchID}
+                    <Alert.Root class="text-center mt-1 mb-1"> 
+                        <Alert.Title class="text-2xl text-slate-400">Nincs ilyen azonosítóval rendelkező üveg!</Alert.Title>
+                    </Alert.Root> 
+                {:else if noBottles}
+                    <Alert.Root class="text-center mt-1 mb-1"> 
+                        <Alert.Title class="text-2xl text-slate-400">Nincs regisztrált üveged!</Alert.Title>
+                    </Alert.Root> 
+                {/if}
                 
-
-
                 <div class="max-h-96 overflow-y-scroll overflow-x-auto">
                     <Table.Root class="w-fit">
                         <Table.Header>

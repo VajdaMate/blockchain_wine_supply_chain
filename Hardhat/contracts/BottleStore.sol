@@ -29,6 +29,13 @@ contract BottleStore{
         bottles.push(Bottle(msg.sender,bottles.length,_typeOfGrape,tmpSunny,tmpRain,tmpTimeOfHarvest,tmpTimeOfBottling));
     }
 
+    function registerBottle(
+        string memory _typeOfGrape, uint32[] memory _sunnyHours, uint32[] memory _rainMilimiters, string[] memory _timeOfHarvest, string[] memory _timeOfBottling) public 
+    {
+        bottles.push(Bottle(msg.sender,bottles.length,_typeOfGrape,_sunnyHours,_rainMilimiters,_timeOfHarvest,_timeOfBottling));
+    }
+
+
     function returnLastBottleID()public view returns (uint256){
         return bottles[bottles.length-1].bottleId;
     }
@@ -94,5 +101,5 @@ contract BottleStore{
         bottles[_id].owner = _newOwner;
     }
 
-    
+
 }

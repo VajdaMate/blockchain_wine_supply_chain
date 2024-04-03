@@ -20,39 +20,51 @@
         headerArray,
     } from "$lib/constants";
 
-    class Bottle {
-        bottleId: number;
-        typeOfGrape: string;
-        sunnyHours: number;
-        rainMilimeters: number;
-        timeOfHarvest: string;
-        timeOfBottling: string;
+    // class Bottle {
+    //     bottleId: number;
+    //     typeOfGrape: string;
+    //     sunnyHours: number[];
+    //     rainMilimeters: number[];
+    //     timeOfHarvest: string[];
+    //     timeOfBottling: string[];
         
-        constructor(
-            bottleId: number,
-            typeOfGrape: string,
-            sunnyHours: number,
-            rainMilimeters: number,
-            timeOfHarvest: string,
-            timeOfBottling: string,
-        ) {
-            this.bottleId = bottleId;
-            this.typeOfGrape = typeOfGrape;
-            this.sunnyHours = sunnyHours;
-            this.rainMilimeters = rainMilimeters;
-            this.timeOfHarvest = timeOfHarvest;
-            this.timeOfBottling = timeOfBottling;
-        }
-    }
+    //     constructor(
+    //         bottleId: number,
+    //         typeOfGrape: string,
+    //         sunnyHours: number[],
+    //         rainMilimeters: number[],
+    //         timeOfHarvest: string[],
+    //         timeOfBottling: string[],
+    //     ) {
+    //         this.bottleId = bottleId;
+    //         this.typeOfGrape = typeOfGrape;
+    //         this.sunnyHours = sunnyHours;
+    //         this.rainMilimeters = rainMilimeters;
+    //         this.timeOfHarvest = timeOfHarvest;
+    //         this.timeOfBottling = timeOfBottling;
+    //     }
+    // }
+
 
 
     import RowCentered from "$lib/RowCentered.svelte";
     import ColCentered from "$lib/ColCentered.svelte";
     import BottleImage from "$lib/assets/Wine BottleSmall.png";
-    import { Description } from "formsnap";
 
 
-    let bottle:Bottle;
+    let bottleID: number;
+    let typeOfGrape: string;
+    let sunnyHours: number[];
+    let rainMilimeters: number[];
+    let timeOfHarvest: string[];
+    let timeOfBottling: string[];
+    
+    let tmpSunnyHours: number;
+    let tmpRainMilimeters: number;
+    let tmpTimeOfHarvest: string;
+    let tmpTimeOfBottling: string;
+
+
     let ID: number;
     let infoArray: Writable<any[]> = writable([]);
     let gotID = writable(false);
@@ -69,37 +81,36 @@
 
     let noSuchID:boolean = false;
 
-    const dateFormats: string[] = 
-    ["YYYY.MM.DD",
-     "YYYY/MM/DD",
-     "YYYY-MM-DD",
-     "DD/MM/YYYY",
-     "DD-MM-YYYY",
-     "DD.MM.YYYY"];  
+    import { dateFormats } from "$lib/constants";
+
 
     async function getID() {
         try{
             let temp= await BottleStore.returnBottleByID(ID)
-            bottle = new Bottle(
-                temp.bottleId,
-                temp.typeOfGrape,
-                temp.sunnyHours,
-                temp.rainMilimeters,
-                temp.timeOfHarvest,
-                temp.timeOfBottling,
-            );
-            
+            bottleID = temp.bottleId;
+            typeOfGrape = temp.typeOfGrape;
+            sunnyHours = temp.sunnyHours;
+            rainMilimeters = temp.rainMilimeters;
+            timeOfHarvest = temp.timeOfHarvest;
+            timeOfBottling = temp.timeOfBottling;
+
+            tmpSunnyHours = sunnyHours[sunnyHours.length-1];
+            tmpRainMilimeters = rainMilimeters[rainMilimeters.length-1];
+            tmpTimeOfHarvest = timeOfHarvest[timeOfHarvest.length-1];
+            tmpTimeOfBottling = timeOfBottling[timeOfBottling.length-1];
+
+
             $gotID = true;
 
             infoArray.set([
-                bottle.bottleId,
-                bottle.typeOfGrape,
-                bottle.sunnyHours,
-                bottle.rainMilimeters,
-                bottle.timeOfHarvest,
-                bottle.timeOfBottling,
-            
+                bottleID,
+                typeOfGrape,
+                sunnyHours,
+                rainMilimeters,
+                timeOfHarvest,
+                timeOfBottling
         ]);
+
         }catch(error:any){
             console.log(error.reason)
             if (error.reason=="Panic due to ARRAY_RANGE_ERROR(50)"){
@@ -109,22 +120,25 @@
     }
 
     async function sunnyUpdate() {
-        const tx = await BottleStore.updateSunnyHours(ID,bottle.sunnyHours);
+        const tx = await BottleStore.updateSunnyHours(ID,tmpSunnyHours);
         const success = await (tx as any).wait();
         if (success.status === 1) {
-            $infoArray[2] = bottle.sunnyHours;
+            sunnyHours = [...sunnyHours, tmpSunnyHours];
+            $infoArray[2] = sunnyHours;
             console.log("Successfully updated!");
+            sunnyDialogOpen = false;
         } else {
             console.error("Transaction failed:", success);
         }
-        sunnyDialogOpen = false;
+        
     }
 
     async function rainUpdate() {
-        const tx = await BottleStore.updateRainMilimeters(ID,bottle.rainMilimeters);
+        const tx = await BottleStore.updateRainMilimeters(ID,tmpRainMilimeters);
         const success = await (tx as any).wait();
         if (success.status === 1) {
-            $infoArray[3] = bottle.rainMilimeters;
+            rainMilimeters= [...rainMilimeters, tmpRainMilimeters];
+            $infoArray[3] = rainMilimeters;
             console.log("Successfully updated!");
         } else {
             console.error("Transaction failed:", success);
@@ -134,11 +148,12 @@
     }
 
     async function harvestUpdate() {
-        const tx = await BottleStore.updateTimeOfHarvest(ID,bottle.timeOfHarvest);
+        const tx = await BottleStore.updateTimeOfHarvest(ID,tmpTimeOfHarvest);
 
         const success = await (tx as any).wait();
         if (success.status === 1) {
-            $infoArray[4] = bottle.timeOfHarvest;
+            timeOfHarvest= [...timeOfHarvest, tmpTimeOfHarvest];
+            $infoArray[4] = timeOfHarvest;
             console.log("Successfully updated!");
         } else {
             console.error("Transaction failed:", success);
@@ -146,11 +161,12 @@
         harvestDialogOpen = false;
     }
     async function bottlingUpdate() {
-        const tx = await BottleStore.updateTimeOfBottling(ID,bottle.timeOfBottling);
+        const tx = await BottleStore.updateTimeOfBottling(ID,tmpTimeOfBottling);
 
         const success = await (tx as any).wait();
         if (success.status === 1) {
-            $infoArray[5] = bottle.timeOfBottling;
+            timeOfBottling= [...timeOfBottling, tmpTimeOfBottling];
+            $infoArray[5] = timeOfBottling;
             console.log("Successfully updated!");
         } else {
             console.error("Transaction failed:", success);
@@ -251,28 +267,24 @@
                             </Table.Row>
                         </Table.Body>
                     </Table.Root>
-
-                  
-                    {#if $infoArray[2] == 0}
                      
                     <Label>Napsütéses órák száma</Label>
                     <div class="flex">
-                        <Input type="number" bind:value={bottle.sunnyHours} />
+                        <Input type="number" bind:value={tmpSunnyHours} />
                         
                         <Dialog.Root bind:open={sunnyDialogOpen}>
                             <Dialog.Trigger class="ml-1 px-3 text-slate-800 font-semibold text-base bg-white rounded-md" >Frissítés</Dialog.Trigger>
                             <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
                                 
                                 <Dialog.Header class="mt-4 mb-3">
-                                    {#if (bottle.sunnyHours==0)}
+                                    {#if (tmpSunnyHours==sunnyHours[sunnyHours.length-1])}
                                         
-                                        <div class="mt-2 mb-2 text-3xl text-center">Adja meg a napsütéses órák számát!</div>
+                                        <div class="mt-2 mb-2 text-3xl text-center">Adja meg az új napsütéses óra számot!</div>
                                     
-                                    {:else if (bottle.sunnyHours < 1000 )}
-                                        
+                                    {:else if (tmpSunnyHours < 1000 )}
                                         <div class="text-5xl text-center text-red-700">Túl kevés napos óra! </div>  
 
-                                    {:else if (bottle.sunnyHours > 5000 )}
+                                    {:else if (tmpSunnyHours > 5000 )}
                                         
                                         <div class="text-5xl text-center text-red-700">Túl sok napos óra! </div>  
                                     
@@ -282,10 +294,10 @@
                                         Biztosan ennyi napsütéses órával szeretnéd frissíteni az üveget?
                                     </Dialog.Title>
                                     
-                                    <div class="mt-2 mb-2 text-2xl text-destructive"> Napsütéses órák száma: {bottle.sunnyHours}</div>
+                                    <div class="mt-2 mb-2 text-2xl text-destructive"> Napsütéses órák száma: {tmpSunnyHours}</div>
                                     
                                     <Dialog.Description class="text-lg">
-                                        Ez a művelet visszafordíthatatlan, csak egyszer frissíthető és költségekkel jár!
+                                        Ez a művelet visszafordíthatatlan és költségekkel jár!
                                     </Dialog.Description>
 
                                     <Button on:click={sunnyUpdate} class="mt-2 w-full">Frissítés</Button>
@@ -296,131 +308,127 @@
                             </Dialog.Content>
                         </Dialog.Root> 
                     </div>
-                {/if}
+         
                     
-                {#if $infoArray[3] == 0}
-                    <Label>Eső miliméterben</Label>
-                    <div class="flex">
-                        <Input type="number" bind:value={bottle.rainMilimeters} />
-                        <Dialog.Root bind:open={rainDialogOpen}>
-                            <Dialog.Trigger class="ml-1 px-3 text-slate-800 font-semibold text-base bg-white rounded-md" >Frissítés</Dialog.Trigger>
-                            <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
-                                
-                                <Dialog.Header class="mt-4 mb-3">
-                                    {#if (bottle.rainMilimeters < 100 )}
+            
+                <Label>Eső miliméterben</Label>
+                <div class="flex">
+                    <Input type="number" bind:value={tmpRainMilimeters} />
+                    <Dialog.Root bind:open={rainDialogOpen}>
+                        <Dialog.Trigger class="ml-1 px-3 text-slate-800 font-semibold text-base bg-white rounded-md" >Frissítés</Dialog.Trigger>
+                        <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
+                            
+                            <Dialog.Header class="mt-4 mb-3">
+                                {#if tmpRainMilimeters==rainMilimeters[rainMilimeters.length-1]}
+                                    <div class="mt-2 mb-2 text-3xl text-center">Adja meg az új eső mennyiséget!</div>
+
+                                {:else if (tmpRainMilimeters < 100 )}
                                     <div class="text-5xl text-center text-red-700">Túl kevés eső!</div>  
 
-                                    {:else if (bottle.rainMilimeters > 1500 )}
-                                        <div class="text-5xl text-center text-red-700">Túl sok eső!</div>  
-                                    
-                                    {:else}
-                                    <div class="mt-2 mb-2 text-3xl text-center">Adja meg az eső mennyiségét!</div>
-                                    
-                                    <Dialog.Title class="text-3xl">Biztosan ezzel az eső mennyiséggel szeretnéd frissíteni az üveget?
-                                        <div class="mt-2 mb-2 text-2xl text-destructive"> Eső mennyisége: {bottle.rainMilimeters} mm</div>
-                                    </Dialog.Title>
-                                    
-                                    <Dialog.Description class="text-lg">
-                                        Ez a művelet visszafordíthatatlan, csak egyszer frissíthető és költségekkel jár!
-                                    </Dialog.Description>
-        
-                                    <Button on:click={rainUpdate} class="mt-2 w-full">Frissítés</Button>
-                                    {/if}
-                                </Dialog.Header>
-        
-                            </Dialog.Content>
-                        </Dialog.Root> 
-                    </div>
-                    {/if}
-                
-                    {#if $infoArray[4] == "Még nem szüretelt"}
-                    <Label>Szüretelés időpontja</Label>
-                    <div class="flex">
-                        <Input type="string" bind:value={bottle.timeOfHarvest} />
-                        <Dialog.Root bind:open={harvestDialogOpen}>
-                            <Dialog.Trigger class="ml-1 px-3 text-slate-800 font-semibold text-base bg-white rounded-md" >Frissítés</Dialog.Trigger>
-                            <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
-                                <Dialog.Header class="mt-4 mb-3">
-                                    {#if (  !moment(bottle.timeOfHarvest,dateFormats).isValid() 
-                                            || 
-                                            moment(bottle.timeOfHarvest,dateFormats).isAfter(moment())
-                                            ||
-                                            moment(bottle.timeOfHarvest,dateFormats).isBefore(moment().subtract(1, 'month')
-                                    ))}
-
-                                        <div class="mt-2 mb-2 text-3xl text-center">Nem megfelelő dátum!</div>
-
-                                    {:else}
-                                    <div class="mt-2 mb-2 text-3xl text-center">Adja meg a szüretelés időpontját!</div>
-                                    <Dialog.Title class="text-3xl">Biztosan ezzel a szüretelési dátummal szeretnéd frissíteni az üveget?
-                                        <div class="mt-2 mb-2 text-2xl text-destructive"> Szüret dátuma: {bottle.timeOfHarvest}</div>
-                                    </Dialog.Title>
-                                    
-                                    <Dialog.Description class="text-lg">
-                                        Ez a művelet visszafordíthatatlan, csak egyszer frissíthető, és költségekkel jár!
-                                    </Dialog.Description>
-                                    <Button on:click={harvestUpdate} class="mt-2 w-full">Frissítés</Button>
-    
-                                    {/if}
-
-                                </Dialog.Header>
+                                {:else if (tmpRainMilimeters > 1500 )}
+                                    <div class="text-5xl text-center text-red-700">Túl sok eső!</div>  
                                 
-                            </Dialog.Content>
-                        </Dialog.Root> 
-                    </div>
-                    {/if}
+                                {:else}
+                                <div class="mt-2 mb-2 text-3xl text-center">Adja meg az eső mennyiségét!</div>
+                                
+                                <Dialog.Title class="text-3xl">Biztosan ezzel az eső mennyiséggel szeretnéd frissíteni az üveget?
+                                    <div class="mt-2 mb-2 text-2xl text-destructive"> Eső mennyisége: {tmpRainMilimeters} mm</div>
+                                </Dialog.Title>
+                                
+                                <Dialog.Description class="text-lg">
+                                    Ez a művelet visszafordíthatatlan és költségekkel jár!
+                                </Dialog.Description>
+    
+                                <Button on:click={rainUpdate} class="mt-2 w-full">Frissítés</Button>
+                                {/if}
+                            </Dialog.Header>
+    
+                        </Dialog.Content>
+                    </Dialog.Root> 
+                </div>
+                    
                 
-                    {#if  $infoArray[5] == "Még nem palackozott"}
-                    <Label>Palackozás időpontja</Label>
-                    <div class="flex">
-                        <Input type="string" bind:value={bottle.timeOfBottling} />
-                        
-                        <Dialog.Root bind:open={bottlingDialogOpen}>
-                            <Dialog.Trigger class="ml-1 px-3 text-slate-800 font-semibold text-base bg-white rounded-md" >Frissítés</Dialog.Trigger>
-                            <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
-                                <Dialog.Header class="mt-4 mb-3">
-                                    {#if (  
-                                        bottle.timeOfHarvest=="Még nem szüretelt"
-                                        ||
-                                        !moment(bottle.timeOfBottling,dateFormats).isValid() 
+                    
+                <Label>Szüretelés időpontja</Label>
+                <div class="flex">
+                    <Input type="string" bind:value={tmpTimeOfHarvest} />
+                    <Dialog.Root bind:open={harvestDialogOpen}>
+                        <Dialog.Trigger class="ml-1 px-3 text-slate-800 font-semibold text-base bg-white rounded-md" >Frissítés</Dialog.Trigger>
+                        <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
+                            <Dialog.Header class="mt-4 mb-3">
+                                {#if tmpTimeOfHarvest==timeOfHarvest[timeOfHarvest.length-1]}
+                                    <div class="mt-2 mb-2 text-3xl text-center">Adja meg az új szüretelési dátumot!</div>
+                                
+                                {:else if (  !moment(tmpTimeOfHarvest,dateFormats).isValid() 
                                         || 
-                                        moment(bottle.timeOfBottling,dateFormats).isAfter(moment())
-                                        ||
-                                        moment(bottle.timeOfBottling,dateFormats).isBefore(moment().subtract(1, 'month'))
-                                        ||
-                                        moment(bottle.timeOfBottling,dateFormats).isBefore(moment(bottle.timeOfHarvest,dateFormats)) 
-                                    )}
+                                        moment(tmpTimeOfHarvest,dateFormats).isAfter(moment())
+                                )}
+                                    <div class="mt-2 mb-2 text-3xl text-center">Nem megfelelő dátum!</div>
+                                {:else}
 
-                                        <div class="mt-2 mb-2 text-3xl text-center">Nem megfelelő dátum!</div>
-                                    
-                                    {:else}
-                                        <Dialog.Title class="text-3xl">Biztosan ezzel a palackozási dátummal szeretnéd frissíteni az üveget?
-                                            <div class="mt-2 mb-2 text-2xl text-destructive"> Palackozás dátuma: {bottle.timeOfBottling}</div>
-                                        </Dialog.Title>
-                                        
-                                        <Dialog.Description class="text-lg">
-                                            Ez a művelet visszafordíthatatlan, csak egyszer frissíthető, és költségekkel jár!
-                                        </Dialog.Description>
-                                        <Button on:click={bottlingUpdate} class="mt-2 w-full">Frissítés</Button>
-                                    {/if}
-                                </Dialog.Header>
-                            </Dialog.Content>
-                        </Dialog.Root> 
-                    </div>
+                                <div class="mt-2 mb-2 text-3xl text-center">Adja meg a szüretelés időpontját!</div>
+                                <Dialog.Title class="text-3xl">Biztosan ezzel a szüretelési dátummal szeretnéd frissíteni az üveget?
+                                    <div class="mt-2 mb-2 text-2xl text-destructive"> Szüret dátuma: {tmpTimeOfHarvest}</div>
+                                </Dialog.Title>
+                                
+                                <Dialog.Description class="text-lg">
+                                    Ez a művelet visszafordíthatatlan és költségekkel jár!
+                                </Dialog.Description>
+                                <Button on:click={harvestUpdate} class="mt-2 w-full">Frissítés</Button>
 
-                    {/if}
+                                {/if}
 
-                    {#if $infoArray[2] != 0 && $infoArray[3] != 0 && $infoArray[4] != "Még nem szüretelt" && $infoArray[5] != "Még nem palackozott"}
-                        <Alert.Root class="w-full h-1/2 mt-5">
-                            <Alert.Title class="text-2xl text-slate-200">Nem lehetséges az üveg további frissítése!</Alert.Title>
+                            </Dialog.Header>
                             
-                            <Alert.Description class="text-slate-400">
-                                Az üveg minden adatát egyszer lehetséges frissíteni, hogy ne lehessen manipulálni, vagy felülírni a már rögzített adatokat.
-                            </Alert.Description>
-                        </Alert.Root>
-                    {/if}
+                        </Dialog.Content>
+                    </Dialog.Root> 
+                </div>
+            
+            
+                
+                <Label>Palackozás időpontja</Label>
+                <div class="flex">
+                    <Input type="string" bind:value={tmpTimeOfBottling} />
+                    
+                    <Dialog.Root bind:open={bottlingDialogOpen}>
+                        <Dialog.Trigger class="ml-1 px-3 text-slate-800 font-semibold text-base bg-white rounded-md" >Frissítés</Dialog.Trigger>
+                        <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
+                            <Dialog.Header class="mt-4 mb-3">
+                                {#if tmpTimeOfBottling==timeOfBottling[timeOfBottling.length-1]}
+                                    <div class="mt-2 mb-2 text-3xl text-center">Adja meg az új palackozási dátumot!</div>
+                               
+                                
+                                {:else if (  
+                                    !moment(tmpTimeOfBottling,dateFormats).isValid() 
+                                    || 
+                                    moment(tmpTimeOfBottling,dateFormats).isAfter(moment())
+                                    ||
+                                    moment(tmpTimeOfBottling,dateFormats).isBefore(moment(tmpTimeOfBottling,dateFormats)) 
+                                )}
 
-                    <Button on:click={() => $gotID = false} class="w-full mt-5" >Másik üveg frissítése</Button>
+                                    <div class="mt-2 mb-2 text-3xl text-center">Nem megfelelő dátum!</div>
+                                
+
+
+
+                                {:else}
+                                    <Dialog.Title class="text-3xl">Biztosan ezzel a palackozási dátummal szeretnéd frissíteni az üveget?
+                                        <div class="mt-2 mb-2 text-2xl text-destructive"> Palackozás dátuma: {tmpTimeOfBottling}</div>
+                                    </Dialog.Title>
+                                    
+                                    <Dialog.Description class="text-lg">
+                                        Ez a művelet visszafordíthatatlan és költségekkel jár!
+                                    </Dialog.Description>
+                                    <Button on:click={bottlingUpdate} class="mt-2 w-full">Frissítés</Button>
+                                {/if}
+                            </Dialog.Header>
+                        </Dialog.Content>
+                    </Dialog.Root> 
+                </div>
+
+
+
+                <Button on:click={() => $gotID = false} class="w-full mt-5" >Másik üveg frissítése</Button>
                 {/if}
             </Card.Content>
 

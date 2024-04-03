@@ -11,10 +11,12 @@
 
     import { defaultEvmStores as evm, connected } from "ethers-svelte";
     import { ethers } from "ethers";
+    import moment from "moment";
 
     import {
         contractAdress,
-        BottleStoreABI
+        BottleStoreABI,
+        dateFormats
     } from "$lib/constants";
 
     import RowCentered from "$lib/RowCentered.svelte";
@@ -22,9 +24,15 @@
     import BottleImage from "$lib/assets/Wine BottleSmall.png";
 
     let contractRegistered:boolean = false;
-
-    let typeOfGrape: string="";
+    
     let bottleID: number;
+    let typeOfGrape: string="";
+    let sunnyHours: number=0;
+    let rainMilimeters: number=0;
+    let timeOfHarvest: string="";
+    let timeOfBottling: string="";
+    $: justTheType = sunnyHours == 0 || rainMilimeters == 0 || timeOfHarvest == "" || timeOfBottling == "";
+    
 
     let provider: ethers.BrowserProvider
     let signer: ethers.JsonRpcSigner
@@ -35,17 +43,43 @@
     async function submitForm() {
         contractRegistered = false;
        
-        const tx = await BottleStore.registerBottle(typeOfGrape);
-        const receipt = await (tx as any).wait();
-        if (receipt.status === 1) {
-            bottleID = await BottleStore.returnLastBottleID();
-            contractRegistered = true;
-            console.log("Transaction successful!");
-        } else {
-            console.error("Transaction failed:", receipt);
+        if (justTheType) {
+            console.log(justTheType)
+            const tx = await BottleStore.registerBottle(typeOfGrape);
+            const receipt = await (tx as any).wait();
+            if (receipt.status === 1) {
+                bottleID = await BottleStore.returnLastBottleID();
+                contractRegistered = true;
+                console.log("Transaction successful!");
+            } else {
+                console.error("Transaction failed:", receipt);
+            }
+            dialogOpen = false;
+            resetData();
         }
-        dialogOpen = false;
+
+        else{
+            const tx = await BottleStore.registerBottle(typeOfGrape,[sunnyHours], [rainMilimeters], [timeOfHarvest], [timeOfBottling]);
+            const receipt = await (tx as any).wait();
+            if (receipt.status === 1) {
+                bottleID = await BottleStore.returnLastBottleID();
+                contractRegistered = true;
+                console.log("Transaction successful!");
+            } else {
+                console.error("Transaction failed:", receipt);
+            }
+            dialogOpen = false;
+            resetData();
+        
+        }
+    }
+
+    function resetData(){
         typeOfGrape = "";
+        sunnyHours = 0;
+        rainMilimeters = 0;
+        timeOfHarvest = "";
+        timeOfBottling = "";
     }
 
     async function connectWallet() {
@@ -61,6 +95,7 @@
             signer,
         );
     }
+
 
     async function connect(){
         await connectWallet();
@@ -106,8 +141,7 @@
                     >Regisztráljon egy üveget!</Card.Title
                 >
                 <Card.Description class="text-base">
-                    Szőlő fajtájának megadásávál rögzítheti az üveget a
-                    blokkláncon.
+                    Csak a Szőlő fajtájának megadásávál, vagy az összes adat megadásával regisztrálhatja az üveget a blokkláncon.
                 </Card.Description>
             </Card.Header>
 
@@ -116,19 +150,63 @@
             
                 <Label>Szőlő fajtája</Label>
                 <Input type="string" bind:value={typeOfGrape} />
+
+                <Label>Napos Órák száma</Label>
+                <Input type="number" bind:value={sunnyHours} />
+
+                <Label>Eső mennyisége (mm)</Label>
+                <Input type="number" bind:value={rainMilimeters} />
+
+                <Label>Szüretelés időpontja </Label>
+                <Input type="string" bind:value={timeOfHarvest} />
+
+                <Label>Palackozás időpontja</Label>
+                <Input type="string" bind:value={timeOfBottling} />
                 
                 <Dialog.Root bind:open={dialogOpen}>
-                    <Dialog.Trigger class="mt-2 p-1 w-full text-slate-800 font-medium text-lg bg-white rounded-sm" >Frissítés</Dialog.Trigger>
+                    <Dialog.Trigger class="mt-2 p-1 w-full text-slate-800 font-medium text-lg bg-white rounded-sm" >Regisztráció</Dialog.Trigger>
                     <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
-                        
                         {#if typeOfGrape == ""}
                             <div class="mt-2 mb-2 text-3xl text-center">Nem adott meg szőlőfajtát!</div>
-                        {:else}
+                    
+                        {:else if (sunnyHours<1000 || sunnyHours>3000 ) && !justTheType}
+                                <div class="mt-2 mb-2 text-3xl text-center">Nem megfelelő mennyiségő napos óra!</div>
+                        
+                        {:else if (rainMilimeters<100 || rainMilimeters>1500)&& !justTheType}
+                            <div class="mt-2 mb-2 text-3xl text-center">Nem megfelelő mennyiségő eső mennyiség!</div>
+                        
+                        {:else if ((!moment(timeOfHarvest,dateFormats).isValid() 
+                                    || 
+                                    moment(timeOfHarvest,dateFormats).isAfter(moment())))&& !justTheType}
+                            <div class="mt-2 mb-2 text-3xl text-center">Nem adott szüretelési dátum!</div>
+                           
+                        {:else if ((!moment(timeOfBottling,dateFormats).isValid() 
+                                    || 
+                                    moment(timeOfBottling,dateFormats).isAfter(moment())
+                                    ||
+                                    moment(timeOfBottling,dateFormats).isBefore(moment(timeOfHarvest,dateFormats)))&& !justTheType)}
 
+                            <div class="mt-2 mb-2 text-3xl text-center">Nem megfelelő palackozási datum!</div>
+                        
+                        
+                        {:else}
+                        
                         <Dialog.Header class="mt-4 mb-3">
                             
-                            <Dialog.Title class="text-3xl">Biztosan ezzel a szőlőfajtával szeretnéd regisztrálni az üveget?
-                                <div class="mt-2 mb-2 text-2xl text-red-700"> Szőlőfajta: {typeOfGrape}</div>
+                            
+                            <Dialog.Title class="text-3xl">Biztosan ezekkel az adatokkal szeretné regisztrálni az üveget?
+                                <div class="mt-2 mb-2 text-2xl text-red-700"> 
+                                    {#if justTheType}
+                                        <div class="text-base text-slate-300">Mivel csak a szőlőfajtát adta meg, vagy nem adott meg mindent adatot, ezért a többi attribútumot nem frissíti ezzel a művelettel!</div>
+                                        <div>Szőlőfajta: {typeOfGrape}</div>
+                                    {:else}
+                                        <div>Szőlőfajta: {typeOfGrape}</div>
+                                        <div>Napos órák száma: {sunnyHours}</div>
+                                        <div>Eső mennyisége: {rainMilimeters}</div>
+                                        <div>Szüretelés időpontja: {timeOfHarvest}</div>
+                                        <div>Palackozás időpontja: {timeOfBottling}</div>
+                                    {/if}
+                                </div>
                             </Dialog.Title>
                             
                             <Dialog.Description class="text-lg">

@@ -17,14 +17,14 @@ contract BottleStore{
     
     //Registerhez
     function registerBottle(string memory _typeOfGrape) public {
-        uint32[] memory tmpSunny = new uint32[](0); 
-        tmpSunny[0]=0; 
-        uint32[] memory tmpRain = new uint32[](0); 
-        tmpRain[0]=0;
-        string[] memory tmpTimeOfHarvest = new string[](0);
-        tmpTimeOfHarvest[0]="M\u00e9g nem sz\u00fcretelt";
-        string[] memory tmpTimeOfBottling = new string[](0);
-        tmpTimeOfBottling[0]="M\u00e9g nem palackozott";
+        uint32[] memory tmpSunny = new uint32[](1); 
+        tmpSunny[0] = 0;
+        uint32[] memory tmpRain = new uint32[](1);
+        tmpRain[0] = 0;
+        string[] memory tmpTimeOfHarvest = new string[](1);
+        tmpTimeOfHarvest[0] = "M\u00e9g nem sz\u00fcretelt";
+        string[] memory tmpTimeOfBottling = new string[](1);
+        tmpTimeOfBottling[0] = "M\u00e9g nem palackozott";
 
         bottles.push(Bottle(msg.sender,bottles.length,_typeOfGrape,tmpSunny,tmpRain,tmpTimeOfHarvest,tmpTimeOfBottling));
     }

@@ -25,17 +25,17 @@
     class Bottle {
         bottleId: number;
         typeOfGrape: string;
-        sunnyHours: number;
-        rainMilimeters: number;
-        timeOfHarvest: string;
-        timeOfBottling: string;
+        sunnyHours: number[];
+        rainMilimeters: number[];
+        timeOfHarvest: string[];
+        timeOfBottling: string[];
         constructor(
             bottleId: number,
             typeOfGrape: string,
-            sunnyHours: number,
-            rainMilimeters: number,
-            timeOfHarvest: string,
-            timeOfBottling: string,
+            sunnyHours: number[],
+            rainMilimeters: number[],
+            timeOfHarvest: string[],
+            timeOfBottling: string[],
         ) {
             this.bottleId = bottleId;
             this.typeOfGrape = typeOfGrape;
@@ -88,28 +88,30 @@
 
     async function listByOwner(){
         try{
-        let temp=await BottleStore.ownersBottles();
-        console.log(temp.length)
-        if (temp.length==0){
-            noBottles=true;
-        }
-        else{
-            noBottles=false;
-        }
-        let bottleArray: Bottle[] = [];
-        temp.forEach((bottle:Bottle) => {
-            console.log(bottle)
-            let tempBottle = new Bottle(
-                bottle.bottleId,
-                bottle.typeOfGrape,
-                bottle.sunnyHours,
-                bottle.rainMilimeters,
-                bottle.timeOfHarvest,
-                bottle.timeOfBottling,
-            );
-            bottleArray.push(tempBottle);
-        });
-        bottles.set(bottleArray);
+        
+            let temp=await BottleStore.ownersBottles();
+        
+            console.log(temp.length)
+            if (temp.length==0){
+                noBottles=true;
+            }
+            else{
+                noBottles=false;
+            }
+            let bottleArray: Bottle[] = [];
+            temp.forEach((bottle:Bottle) => {
+                console.log(bottle)
+                let tempBottle = new Bottle(
+                    bottle.bottleId,
+                    bottle.typeOfGrape,
+                    bottle.sunnyHours,
+                    bottle.rainMilimeters,
+                    bottle.timeOfHarvest,
+                    bottle.timeOfBottling,
+                );
+                bottleArray.push(tempBottle);
+            });
+            bottles.set(bottleArray);
         
         }catch(error:any){
             console.log(error)

@@ -37,7 +37,7 @@
     let tmpRainMilimeters: number;
     let tmpTimeOfHarvest: string;
     let tmpTimeOfBottling: string;
-    let bottleAddress: string;
+    let ownerAdress: string;
 
 
     let ID: number;
@@ -47,7 +47,7 @@
     let provider: ethers.BrowserProvider
     let signer: ethers.JsonRpcSigner
     let BottleStore: ethers.Contract
-    let address:string
+    let walletAdress:string
 
 
     let sunnyDialogOpen:boolean = false;
@@ -69,7 +69,7 @@
             rainMilimeters = temp.rainMilimeters;
             timeOfHarvest = temp.timeOfHarvest;
             timeOfBottling = temp.timeOfBottling;
-            bottleAddress = temp.adress;
+            ownerAdress = temp.owner;
 
             tmpSunnyHours = sunnyHours[sunnyHours.length-1];
             tmpRainMilimeters = rainMilimeters[rainMilimeters.length-1];
@@ -163,7 +163,7 @@
             BottleStoreABI,
             signer,
         );
-        address = await signer.getAddress();
+        walletAdress = await signer.getAddress();
     }
 
     async function connect(){
@@ -255,7 +255,7 @@
                             <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
                                 
                                 <Dialog.Header class="mt-4 mb-3">
-                                    {#if (bottleAddress!=address)}
+                                    {#if  !(ownerAdress===walletAdress)}
 
                                         <div class="mt-2 mb-2 text-3xl text-center">Csak saját üveget frissíthetsz!</div>
                                     
@@ -301,7 +301,7 @@
                         <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
                             
                             <Dialog.Header class="mt-4 mb-3">
-                                {#if (bottleAddress!=address)}
+                                {#if  !(ownerAdress===walletAdress)}
 
                                     <div class="mt-2 mb-2 text-3xl text-center">Csak saját üveget frissíthetsz!</div>
                                 
@@ -342,7 +342,7 @@
                         <Dialog.Trigger class="ml-1 px-3 text-slate-800 font-semibold text-base bg-white rounded-md" >Frissítés</Dialog.Trigger>
                         <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
                             <Dialog.Header class="mt-4 mb-3">
-                                {#if (bottleAddress!=address)}
+                                {#if !(ownerAdress===walletAdress)}
 
                                     <div class="mt-2 mb-2 text-3xl text-center">Csak saját üveget frissíthetsz!</div>
                                 
@@ -384,7 +384,7 @@
                         <Dialog.Trigger class="ml-1 px-3 text-slate-800 font-semibold text-base bg-white rounded-md " >Frissítés</Dialog.Trigger>
                         <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
                             <Dialog.Header class="mt-4 mb-3">
-                                {#if (bottleAddress!=address)}
+                                {#if (ownerAdress!=walletAdress)}
                                     <div class="mt-2 mb-2 text-3xl text-center">Csak saját üveget frissíthetsz!</div>
                                 
                                 {:else if  tmpTimeOfBottling==timeOfBottling[timeOfBottling.length-1]}

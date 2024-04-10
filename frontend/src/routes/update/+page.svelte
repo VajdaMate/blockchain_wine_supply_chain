@@ -20,33 +20,7 @@
         headerArray,
     } from "$lib/constants";
 
-    // class Bottle {
-    //     bottleId: number;
-    //     typeOfGrape: string;
-    //     sunnyHours: number[];
-    //     rainMilimeters: number[];
-    //     timeOfHarvest: string[];
-    //     timeOfBottling: string[];
-        
-    //     constructor(
-    //         bottleId: number,
-    //         typeOfGrape: string,
-    //         sunnyHours: number[],
-    //         rainMilimeters: number[],
-    //         timeOfHarvest: string[],
-    //         timeOfBottling: string[],
-    //     ) {
-    //         this.bottleId = bottleId;
-    //         this.typeOfGrape = typeOfGrape;
-    //         this.sunnyHours = sunnyHours;
-    //         this.rainMilimeters = rainMilimeters;
-    //         this.timeOfHarvest = timeOfHarvest;
-    //         this.timeOfBottling = timeOfBottling;
-    //     }
-    // }
-
-
-
+   
     import RowCentered from "$lib/RowCentered.svelte";
     import ColCentered from "$lib/ColCentered.svelte";
     import BottleImage from "$lib/assets/Wine BottleSmall.png";
@@ -63,6 +37,7 @@
     let tmpRainMilimeters: number;
     let tmpTimeOfHarvest: string;
     let tmpTimeOfBottling: string;
+    let bottleAddress: string;
 
 
     let ID: number;
@@ -72,6 +47,7 @@
     let provider: ethers.BrowserProvider
     let signer: ethers.JsonRpcSigner
     let BottleStore: ethers.Contract
+    let address:string
 
 
     let sunnyDialogOpen:boolean = false;
@@ -93,12 +69,13 @@
             rainMilimeters = temp.rainMilimeters;
             timeOfHarvest = temp.timeOfHarvest;
             timeOfBottling = temp.timeOfBottling;
+            bottleAddress = temp.adress;
 
             tmpSunnyHours = sunnyHours[sunnyHours.length-1];
             tmpRainMilimeters = rainMilimeters[rainMilimeters.length-1];
             tmpTimeOfHarvest = timeOfHarvest[timeOfHarvest.length-1];
             tmpTimeOfBottling = timeOfBottling[timeOfBottling.length-1];
-
+            
 
             $gotID = true;
 
@@ -109,7 +86,7 @@
                 rainMilimeters,
                 timeOfHarvest,
                 timeOfBottling
-        ]);
+            ]);
 
         }catch(error:any){
             console.log(error.reason)
@@ -186,6 +163,7 @@
             BottleStoreABI,
             signer,
         );
+        address = await signer.getAddress();
     }
 
     async function connect(){
@@ -277,7 +255,11 @@
                             <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
                                 
                                 <Dialog.Header class="mt-4 mb-3">
-                                    {#if (tmpSunnyHours==sunnyHours[sunnyHours.length-1])}
+                                    {#if (bottleAddress!=address)}
+
+                                        <div class="mt-2 mb-2 text-3xl text-center">Csak saját üveget frissíthetsz!</div>
+                                    
+                                    {:else if (tmpSunnyHours==sunnyHours[sunnyHours.length-1])}
                                         
                                         <div class="mt-2 mb-2 text-3xl text-center">Adja meg az új napsütéses óra számot!</div>
                                     
@@ -319,7 +301,11 @@
                         <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
                             
                             <Dialog.Header class="mt-4 mb-3">
-                                {#if tmpRainMilimeters==rainMilimeters[rainMilimeters.length-1]}
+                                {#if (bottleAddress!=address)}
+
+                                    <div class="mt-2 mb-2 text-3xl text-center">Csak saját üveget frissíthetsz!</div>
+                                
+                                {:else if tmpRainMilimeters==rainMilimeters[rainMilimeters.length-1]}
                                     <div class="mt-2 mb-2 text-3xl text-center">Adja meg az új eső mennyiséget!</div>
 
                                 {:else if (tmpRainMilimeters < 100 )}
@@ -356,7 +342,11 @@
                         <Dialog.Trigger class="ml-1 px-3 text-slate-800 font-semibold text-base bg-white rounded-md" >Frissítés</Dialog.Trigger>
                         <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
                             <Dialog.Header class="mt-4 mb-3">
-                                {#if tmpTimeOfHarvest==timeOfHarvest[timeOfHarvest.length-1]}
+                                {#if (bottleAddress!=address)}
+
+                                    <div class="mt-2 mb-2 text-3xl text-center">Csak saját üveget frissíthetsz!</div>
+                                
+                                {:else if tmpTimeOfHarvest==timeOfHarvest[timeOfHarvest.length-1]}
                                     <div class="mt-2 mb-2 text-3xl text-center">Adja meg az új szüretelési dátumot!</div>
                                 
                                 {:else if (  !moment(tmpTimeOfHarvest,dateFormats).isValid() 
@@ -394,7 +384,10 @@
                         <Dialog.Trigger class="ml-1 px-3 text-slate-800 font-semibold text-base bg-white rounded-md " >Frissítés</Dialog.Trigger>
                         <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
                             <Dialog.Header class="mt-4 mb-3">
-                                {#if tmpTimeOfBottling==timeOfBottling[timeOfBottling.length-1]}
+                                {#if (bottleAddress!=address)}
+                                    <div class="mt-2 mb-2 text-3xl text-center">Csak saját üveget frissíthetsz!</div>
+                                
+                                {:else if  tmpTimeOfBottling==timeOfBottling[timeOfBottling.length-1]}
                                     <div class="mt-2 mb-2 text-3xl text-center">Adja meg az új palackozási dátumot!</div>
                                
                                 

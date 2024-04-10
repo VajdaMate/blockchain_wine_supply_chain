@@ -244,9 +244,9 @@
 
             <Card.Footer class="block">
                 <div class="text-xl text-center text-slate-400">
-                    Már regisztráltad az üveget? Ellenőrizd, vagy frissítsd:
+                   Nem regisztrálni szeretnél üveget?
                 </div>
-
+                
                 <div class="flex justify-evenly">
                     <Button class="text-xl mt-1 " variant="link" href="/check"
                         >Ellenőrzés</Button
@@ -254,6 +254,8 @@
                     <Button class="text-xl mt-1" variant="link" href="/update"
                         >Frissítés</Button
                     >
+                    <Button class="text-xl mt-1" variant="link" href="/transfer"
+                        >Tulajdonjog</Button>
                 </div>
             </Card.Footer>
         </Card.Root>

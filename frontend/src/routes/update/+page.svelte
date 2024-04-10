@@ -240,7 +240,7 @@
                     
                     <Label>Üveg azonosítója</Label>
                     <Input type="number" bind:value={ID} />
-                    <Button on:click={getID} class="mt-2 w-full"
+                    <Button on:click={getID} class="mt-2 w-full font-medium text-lg"
                         >Üveg lekérése</Button
                     >
                     {#if noSuchID}
@@ -294,7 +294,7 @@
                                         Biztosan ennyi napsütéses órával szeretnéd frissíteni az üveget?
                                     </Dialog.Title>
                                     
-                                    <div class="mt-2 mb-2 text-2xl text-destructive"> Napsütéses órák száma: {tmpSunnyHours}</div>
+                                        <div class="mt-2 mb-2 text-2xl text-destructive"> Napsütéses órák száma: {tmpSunnyHours}</div>
                                     
                                     <Dialog.Description class="text-lg">
                                         Ez a művelet visszafordíthatatlan és költségekkel jár!
@@ -391,7 +391,7 @@
                     <Input type="string" bind:value={tmpTimeOfBottling} />
                     
                     <Dialog.Root bind:open={bottlingDialogOpen}>
-                        <Dialog.Trigger class="ml-1 px-3 text-slate-800 font-semibold text-base bg-white rounded-md" >Frissítés</Dialog.Trigger>
+                        <Dialog.Trigger class="ml-1 px-3 text-slate-800 font-semibold text-base bg-white rounded-md " >Frissítés</Dialog.Trigger>
                         <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
                             <Dialog.Header class="mt-4 mb-3">
                                 {#if tmpTimeOfBottling==timeOfBottling[timeOfBottling.length-1]}
@@ -428,25 +428,23 @@
 
 
 
-                <Button on:click={() => $gotID = false} class="w-full mt-5" >Másik üveg frissítése</Button>
+                <Button on:click={() => $gotID = false} class="w-full mt-5 font-medium text-lg" >Másik üveg frissítése</Button>
                 {/if}
             </Card.Content>
 
             <Card.Footer class="block">
                 <div class="text-xl text-center text-slate-400">
-                    Új üveget szeretnék regisztrálni, vagy ellenőrizni?
-                    Ellenőrizd, vagy frissítsd:
+                   Nem frissíteni szeretnél üveget?
                 </div>
 
                 <div class="flex justify-evenly">
-                    <Button
-                        class="text-xl mt-1 "
-                        variant="link"
-                        href="/register">Regisztráció</Button
+                    <Button class="text-xl mt-1 " variant="link" href="/register">Regisztráció</Button
                     >
                     <Button class="text-xl mt-1" variant="link" href="/check"
                         >Ellenőrzés</Button
                     >
+                    <Button class="text-xl mt-1" variant="link" href="/transfer"
+                        >Tulajdonjog</Button>
                 </div>
             </Card.Footer>
         </Card.Root>

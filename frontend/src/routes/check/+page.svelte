@@ -189,8 +189,8 @@
                 <form>
                     <Label>Üveg lekérés azonosító alapján</Label>
                     <Input type="number" bind:value={ID} />
-                    <Button on:click={listByID} class="mt-2 w-full">Üveg lekérése megadott azonosítóval</Button>
-                    <Button on:click={listByOwner} class="mt-2 w-full">Saját címmel regisztrált üvegek lekérése</Button>
+                    <Button on:click={listByID} class="mt-2 w-full font-medium text-lg ">Üveg lekérése megadott azonosítóval</Button>
+                    <Button on:click={listByOwner} class="mt-2 w-full font-medium text-lg">Saját címmel regisztrált üvegek lekérése</Button>
                 </form>
                 {#if noSuchID}
                     <Alert.Root class="text-center mt-1 mb-1"> 
@@ -229,17 +229,19 @@
 
             <Card.Footer class="block">
                 <div class="text-xl text-center text-slate-400">
-                    Még nem regiszráltál üveget, vagy frissíteni szeretnéd?
+                    Nem ellenőrizni szeretnél üveget?
+                   
                 </div>
+               
                 <div class="flex justify-evenly">
-                    <Button
-                        class="text-xl mt-1 "
-                        variant="link"
-                        href="/register">Regisztráció</Button
+                    <Button class="text-xl mt-1 " variant="link" href="/register">Regisztráció</Button
                     >
                     <Button class="text-xl mt-1" variant="link" href="/update"
                         >Frissítés</Button
-                    >
+                    >   
+                    <Button class="text-xl mt-1" variant="link" href="/transfer"
+                        >Tulajdonjog</Button>    
+
                 </div>
             </Card.Footer>
         </Card.Root>

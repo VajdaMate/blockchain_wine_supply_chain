@@ -176,7 +176,7 @@
                 {#if !$gotID}
                     <Label>Üveg azonosítója</Label>
                     <Input type="number" bind:value={ID} />
-                    <Button on:click={getID} class="mt-2 w-full"
+                    <Button on:click={getID} class="mt-2 w-full font-medium text-lg"
                         >Üveg lekérése</Button
                     >
                     {#if noSuchID}
@@ -257,13 +257,17 @@
                         </div>
                     {/if}
 
+                    <Button on:click={() => $gotID = false} class="w-full mt-5 font-medium text-lg" >Másik üveg jogának átadása</Button>
+                    
                 {/if}
 
             </Card.Content>
 
             <Card.Footer class="block">
+                
+                
                 <div class="text-xl text-center text-slate-400">
-                   Regisztrálni, ellenőrizni, vagy frissíteni szeretne egy üveget?
+                  Nem tulajdonjogot szeretnél átruházni?
                 </div>
 
                 <div class="flex justify-evenly">

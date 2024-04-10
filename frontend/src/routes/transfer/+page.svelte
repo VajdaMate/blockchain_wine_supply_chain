@@ -29,6 +29,7 @@
     
     let provider: ethers.BrowserProvider
     let signer: ethers.JsonRpcSigner
+    let address: string 
     let BottleStore: ethers.Contract
 
     let dialogOpen = false;
@@ -121,6 +122,8 @@
             BottleStoreABI,
             signer,
         );
+        address = await signer.getAddress();
+        console.log(address)
     }
 
 
@@ -203,18 +206,26 @@
                             </Table.Row>
                         </Table.Body>
                     </Table.Root>
-                
-                    <div>
-                        <Label>Jelenlegi tulajdonos:</Label>
-                        {currentOwner}
-                    </div>
-                   <div>
-                        <Label>Új tulajdonos címe</Label>
-                        <Input type="string" bind:value={newOwner} />
-                   </div>
-                   
-  
-                    <Dialog.Root bind:open={dialogOpen}>
+                    {#if !(currentOwner===address)}
+                        <Alert.Root class="w-full p-8">
+                            <Alert.Title class="text-2xl text-slate-400" >Csak saját üveged tulajdonjogát ruházhatod át!</Alert.Title>
+                            <Alert.Description class="text-xl text-slate-400">
+                                Csatlakozás nélkül nem tudsz interaktálni a blokklánccal.
+                            </Alert.Description>
+                        </Alert.Root>
+                    
+                    {:else }
+                        <div>
+                            <Label>Jelenlegi tulajdonos:</Label>
+                            {currentOwner}
+                        </div>
+                        <div>
+                                <Label>Új tulajdonos címe</Label>
+                                <Input type="string" bind:value={newOwner} />
+                    
+                        </div>
+
+                        <Dialog.Root bind:open={dialogOpen}>
                         
                             <Dialog.Trigger class="mt-2 p-1 w-full text-slate-800 font-medium text-lg bg-white rounded-sm" >Tulajdonjog átruházás</Dialog.Trigger>
                             <Dialog.Content class="max-w-2xl w-1/2 bg-slate-900">
@@ -241,6 +252,9 @@
                             </Dialog.Content>
                            
                     </Dialog.Root>
+
+                    {/if}
+                    
 
                     {#if successFullTransaction}
                         <div class="flex justify-center items-center">
